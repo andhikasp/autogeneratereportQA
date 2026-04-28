@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QA Report Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --bg2: #181c27;
+      --bg3: #1e2235;
+      --card: #22273a;
+      --card2: #272d42;
+      --border: #2e3450;
+      --border2: #3d4468;
+      --text: #e8eaf6;
+      --text2: #8b90b0;
+      --text3: #545878;
+      --accent: #6c63ff;
+      --accent-glow: rgba(108, 99, 255, 0.25);
+      --accent2: #4ecdc4;
+      --success: #4ecdc4;
+      --warn: #ffd166;
+      --info: #74b9ff;
+      --danger: #ff6b6b;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+      --r: 10px;
+      --r2: 14px;
+      --r3: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.25rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      background: rgba(78, 205, 196, .1);
+      border: 1px solid rgba(78, 205, 196, .25);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: .9rem;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(.8); }
+    }
+
+    .hero h1 {
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -.025em;
+      margin-bottom: .35rem;
+    }
+
+    .hero p {
+      font-size: 13.5px;
+      color: var(--text2);
+    }
+
+    /* ── STEP LABELS ── */
+    .step-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .9rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-label::before {
+      content: attr(data-n);
+      font-size: 9px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-weight: 500;
+      letter-spacing: .05em;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.35rem;
+      margin-bottom: .75rem;
+      transition: border-color .2s;
+    }
+
+    .card:focus-within {
+      border-color: var(--border2);
+    }
+
+    /* ── FIELDS ── */
+    .field { margin-bottom: .9rem; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 5px;
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 9px 12px;
+      font-size: 13.5px;
+      color: var(--text);
+      font-family: var(--font);
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      outline: none;
+      appearance: none;
+    }
+
+    input:hover, select:hover, textarea:hover {
+      border-color: var(--border2);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      background: rgba(108, 99, 255, .06);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(.5);
+      cursor: pointer;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23545878' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    select option { background: #1e2235; color: var(--text); }
+
+    textarea {
+      resize: vertical;
+      min-height: 76px;
+      line-height: 1.65;
+    }
+
+    /* ── GRID LAYOUTS ── */
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    @media (max-width: 500px) {
+      .row2, .row3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── TC SECTION ── */
+    .tc-section { margin-bottom: 1rem; }
+    .tc-section:last-child { margin-bottom: 0; }
+
+    .tc-header {
+      font-size: 12px;
+      color: var(--text2);
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tc-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .badge-sit {
+      background: rgba(108, 99, 255, .15);
+      color: var(--accent);
+      border: 1px solid rgba(108, 99, 255, .3);
+    }
+
+    .badge-uat {
+      background: rgba(78, 205, 196, .12);
+      color: var(--accent2);
+      border: 1px solid rgba(78, 205, 196, .25);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: .75rem 0 1rem;
+    }
+
+    /* ── PIC GRID ── */
+    .pic-grid {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .pic-grid:last-child { margin-bottom: 0; }
+
+    .pic-grid label {
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+
+    /* ── STATUS BUTTONS ── */
+    .status-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 7px;
+    }
+
+    .s-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text2);
+      transition: all .15s;
+      letter-spacing: .015em;
+      font-family: var(--font);
+    }
+
+    .s-btn:hover { color: var(--text); border-color: var(--text3); }
+
+    .s-btn.act-success  { background: rgba(78,205,196,.15); color: var(--success); border-color: rgba(78,205,196,.4); }
+    .s-btn.act-progress { background: rgba(255,209,102,.12); color: var(--warn);    border-color: rgba(255,209,102,.35); }
+    .s-btn.act-back     { background: rgba(116,185,255,.12); color: var(--info);    border-color: rgba(116,185,255,.3); }
+    .s-btn.act-fail     { background: rgba(255,107,107,.12); color: var(--danger);  border-color: rgba(255,107,107,.3); }
+
+    /* ── GENERATE BUTTON ── */
+    .gen-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 14.5px;
+      font-weight: 500;
+      border-radius: var(--r2);
+      cursor: pointer;
+      background: linear-gradient(135deg, #6c63ff 0%, #8b5cf6 100%);
+      border: none;
+      color: #fff;
+      margin-top: 1rem;
+      letter-spacing: .02em;
+      transition: opacity .15s, transform .12s, box-shadow .15s;
+      font-family: var(--font);
+      box-shadow: 0 4px 20px rgba(108,99,255,.35);
+    }
+
+    .gen-btn:hover  { opacity: .92; box-shadow: 0 6px 28px rgba(108,99,255,.5); }
+    .gen-btn:active { transform: scale(.99); }
+
+    /* ── RESULT BOX ── */
+    .result-box { margin-top: 2rem; display: none; }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .9rem;
+    }
+
+    .result-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .tab-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: .9rem;
+    }
+
+    .t-btn {
+      padding: 5px 13px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text3);
+      transition: all .15s;
+      font-family: var(--font);
+    }
+
+    .t-btn:hover { color: var(--text2); border-color: var(--border2); }
+
+    .t-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(108, 99, 255, .1);
+    }
+
+    .out-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.35rem;
+      position: relative;
+    }
+
+    .out-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .85rem;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      font-weight: 500;
+      border-radius: 7px;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+      color: var(--text2);
+      transition: all .15s;
+      font-family: var(--font);
+    }
+
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); background: rgba(108,99,255,.08); }
+    .copy-btn.copied { color: var(--success); border-color: rgba(78,205,196,.4); }
+
+    .report-text {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--text);
+      white-space: pre-wrap;
+      line-height: 1.85;
+      padding-top: .25rem;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 12px;
+      color: var(--text3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="hero">
+      <div class="hero-badge">QA Report System</div>
+      <h1>Report Generator</h1>
+      <p>Isi form di bawah — generate 3 report sekaligus dalam hitungan detik</p>
+    </div>
+
+    <!-- 01 Info Proyek -->
+    <div class="step-label" data-n="01">Info Proyek</div>
+    <div class="card">
+      <div class="field">
+        <label><span class="dot"></span>Nama Aplikasi</label>
+        <input type="text" id="app_name" placeholder="EFS SAP" />
+      </div>
+      <div class="field">
+        <label><span class="dot"></span>Nama Project</label>
+        <input type="text" id="project_name" placeholder="Patching Data - Update data PAR G/L Posisi Maret 2026" />
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Link Jira</label>
+          <input type="text" id="jira_link" placeholder="https://jira.bri.co.id/browse/NOE..." />
+        </div>
+        <div class="field">
+          <label>No. Tiket NCM / iRIS</label>
+          <input type="text" id="ticket_no" placeholder="NCM2604..." />
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Kategori</label>
+          <select id="category">
+            <option>Agile</option>
+            <option>OPS</option>
+            <option>Waterfall</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tipe</label>
+          <select id="type">
+            <option>Rollout</option>
+            <option>Hotfix</option>
+            <option>Maintenance</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Criticality Aplikasi</label>
+        <select id="criticality">
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+          <option>Critical</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 02 Latar Belakang -->
+    <div class="step-label" data-n="02">Latar Belakang & Tujuan</div>
+    <div class="card">
+      <div class="field">
+        <label>Latar Belakang</label>
+        <textarea id="background" placeholder="Jelaskan permasalahan atau konteks yang melatarbelakangi perubahan ini..."></textarea>
+      </div>
+      <div class="field">
+        <label>Tujuan Perubahan</label>
+        <textarea id="purpose" placeholder="Apa yang ingin dicapai dari perubahan ini..."></textarea>
+      </div>
+      <div class="field">
+        <label>Outcome</label>
+        <textarea id="outcome" placeholder="Hasil yang diharapkan setelah perubahan..."></textarea>
+      </div>
+    </div>
+
+    <!-- 03 Tanggal -->
+    <div class="step-label" data-n="03">Tanggal & Waktu</div>
+    <div class="card">
+      <div class="row2">
+        <div class="field">
+          <label>Mulai Aktivitas Testing</label>
+          <input type="date" id="test_start" />
+        </div>
+        <div class="field">
+          <label>Rencana Deployment</label>
+          <input type="date" id="deploy_date" />
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Start Time Deploy</label>
+          <input type="time" id="start_time" />
+        </div>
+        <div class="field">
+          <label>End Time Deploy</label>
+          <input type="time" id="end_time" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 Test Case -->
+    <div class="step-label" data-n="04">Test Case</div>
+    <div class="card">
+      <div class="tc-section">
+        <div class="tc-header">SIT <span class="tc-badge badge-sit">System Integration Test</span></div>
+        <div class="row3">
+          <div class="field"><label>Happy Flow</label><input type="number" id="sit_happy" value="0" min="0" /></div>
+          <div class="field"><label>Unhappy Flow</label><input type="number" id="sit_unhappy" value="0" min="0" /></div>
+          <div class="field"><label>Defect</label><input type="number" id="sit_defect" value="0" min="0" /></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="tc-section">
+        <div class="tc-header">UAT <span class="tc-badge badge-uat">User Acceptance Test</span></div>
+        <div class="row3">
+          <div class="field"><label>Happy Flow</label><input type="number" id="uat_happy" value="0" min="0" /></div>
+          <div class="field"><label>Unhappy Flow</label><input type="number" id="uat_unhappy" value="0" min="0" /></div>
+          <div class="field"><label>Defect</label><input type="number" id="uat_defect" value="0" min="0" /></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="field">
+        <label><span class="dot"></span>Data Preparation (satu per baris)</label>
+        <textarea id="data_prep" placeholder="File Recon ZTPAPM&#10;File lainnya..."></textarea>
+      </div>
+      <div class="field">
+        <label><span class="dot"></span>Happy Flow — aktivitas yang diverifikasi (satu per baris)</label>
+        <textarea id="happy_activities" placeholder="Verifikasi Querry SQL&#10;Verifikasi Posting Date After Querry"></textarea>
+      </div>
+      <div class="field">
+        <label>Unhappy Flow — aktivitas (satu per baris, kosongkan jika tidak ada)</label>
+        <textarea id="unhappy_activities" placeholder="Verifikasi error handling saat data tidak valid"></textarea>
+      </div>
+      <div class="field">
+        <label>Defect — deskripsi (satu per baris, kosongkan jika tidak ada)</label>
+        <textarea id="defect_notes" placeholder="Deskripsi defect yang ditemukan..."></textarea>
+      </div>
+    </div>
+
+    <!-- 05 PIC -->
+    <div class="step-label" data-n="05">PIC</div>
+    <div class="card">
+      <div class="pic-grid"><label>Dev</label><input type="text" id="pic_dev" placeholder="Kode (Nama)" /></div>
+      <div class="pic-grid"><label>QA</label><input type="text" id="pic_qa" placeholder="Kode (Nama1, Nama2)" /></div>
+      <div class="pic-grid"><label>Ops</label><input type="text" id="pic_ops" placeholder="Kode (Nama)" /></div>
+      <div class="pic-grid"><label>PO</label><input type="text" id="pic_po" placeholder="Kode (Nama1, Nama2)" /></div>
+      <div class="pic-grid"><label>Test Lead</label><input type="text" id="pic_tl" placeholder="Nama (Kode)" /></div>
+      <div class="pic-grid"><label>Tester</label><input type="text" id="pic_tester" placeholder="Nama (Kode)" /></div>
+    </div>
+
+    <!-- 06 Status -->
+    <div class="step-label" data-n="06">Status & Notes</div>
+    <div class="card">
+      <div class="field">
+        <label>Status Deploy</label>
+        <div class="status-group">
+          <button class="s-btn act-success" id="btn-success"  onclick="setStatus('success')">Success</button>
+          <button class="s-btn"             id="btn-progress" onclick="setStatus('progress')">On Progress</button>
+          <button class="s-btn"             id="btn-back"     onclick="setStatus('back')">Back to Dev</button>
+          <button class="s-btn"             id="btn-fail"     onclick="setStatus('fail')">Failed</button>
+        </div>
+      </div>
+      <div class="field" style="margin-top:.9rem">
+        <label>Notes tambahan</label>
+        <textarea id="notes" placeholder="Catatan pasca deploy, temuan, dll..."></textarea>
+      </div>
+    </div>
+
+    <button class="gen-btn" onclick="generate()">Generate 3 Report ↗</button>
+
+    <!-- Result -->
+    <div class="result-box" id="result-box">
+      <div class="tab-row">
+        <button class="t-btn active" onclick="showTab(0)">Deploy Test</button>
+        <button class="t-btn"        onclick="showTab(1)">Aktivitas Testing</button>
+        <button class="t-btn"        onclick="showTab(2)">Readiness Report</button>
+      </div>
+      <div class="out-card">
+        <div class="out-label" id="out-label">Deploy Test Report</div>
+        <button class="copy-btn" id="copy-btn" onclick="copyReport()">Salin</button>
+        <div class="report-text" id="report-content"></div>
+      </div>
+    </div>
+
+    <div class="footer">QA Report Generator &mdash; IT Application Support Group</div>
+  </div>
+
+  <script>
+    let deployStatus = 'success';
+    let reports = ['', '', ''];
+    let currentTab = 0;
+
+    function setStatus(s) {
+      deployStatus = s;
+      const map = { success: 'act-success', progress: 'act-progress', back: 'act-back', fail: 'act-fail' };
+      ['success', 'progress', 'back', 'fail'].forEach(k => {
+        document.getElementById('btn-' + k).className = 's-btn' + (k === s ? ' ' + map[k] : '');
+      });
+    }
+
+    function g(id) { return document.getElementById(id).value.trim(); }
+
+    function fmtDate(d) {
+      if (!d) return '-';
+      const [y, m, day] = d.split('-');
+      return `${day}-${m}-${y}`;
+    }
+
+    function fmtTime(t) {
+      if (!t) return '-';
+      return t.replace(':', '.');
+    }
+
+    function getStatusStr(s) {
+      return { success: 'Success ✅', progress: 'On Progress 🔄', back: 'Back to Dev 🔁', fail: 'Failed ❌' }[s] || 'Success ✅';
+    }
+
+    function getJiraStatus(s) {
+      return { success: 'Done ✅', progress: 'On Progress 🔄', back: 'Back to Dev 🔁', fail: 'Failed ❌' }[s] || 'Done ✅';
+    }
+
+    function generate() {
+      const data = {
+        app:        g('app_name'),
+        project:    g('project_name'),
+        jira:       g('jira_link'),
+        ticket:     g('ticket_no'),
+        cat:        g('category'),
+        type:       g('type'),
+        crit:       g('criticality'),
+        bg:         g('background'),
+        purpose:    g('purpose'),
+        outcome:    g('outcome'),
+        testStart:  fmtDate(g('test_start')),
+        deployDate: fmtDate(g('deploy_date')),
+        startTime:  fmtTime(g('start_time')),
+        endTime:    fmtTime(g('end_time')),
+        sitHappy:   g('sit_happy')   || '0',
+        sitUnhappy: g('sit_unhappy') || '0',
+        sitDefect:  g('sit_defect')  || '0',
+        uatHappy:   g('uat_happy')   || '0',
+        uatUnhappy: g('uat_unhappy') || '0',
+        uatDefect:  g('uat_defect')  || '0',
+        dataPrep:   g('data_prep'),
+        happyActs:  g('happy_activities'),
+        unhappyActs:g('unhappy_activities'),
+        defectNotes:g('defect_notes'),
+        dev:        g('pic_dev'),
+        qa:         g('pic_qa'),
+        ops:        g('pic_ops'),
+        po:         g('pic_po'),
+        tl:         g('pic_tl'),
+        tester:     g('pic_tester'),
+        notes:      g('notes'),
+        status:     deployStatus
+      };
+
+      const happyLines   = data.happyActs   ? data.happyActs.split('\n').filter(Boolean)   : [];
+      const unhappyLines = data.unhappyActs  ? data.unhappyActs.split('\n').filter(Boolean)  : [];
+      const defectLines  = data.defectNotes  ? data.defectNotes.split('\n').filter(Boolean)  : [];
+      const prepLines    = data.dataPrep     ? data.dataPrep.split('\n').filter(Boolean)     : [];
+
+      const totalSitTC   = parseInt(data.sitHappy) + parseInt(data.sitUnhappy);
+      const lastUpdate   = data.deployDate !== '-'
+        ? `${data.deployDate}, ${data.endTime !== '-' ? data.endTime : '-'}`
+        : '-';
+
+      const happyForDeploy   = happyLines.length   > 0 ? happyLines.map(a => ` # ${a.trim()} ✅`).join('\n')  : ' # -';
+      const unhappyForDeploy = unhappyLines.length > 0 ? unhappyLines.map(a => ` # ${a.trim()}`).join('\n') : parseInt(data.sitUnhappy) || 0;
+      const prepForReport    = prepLines.length    > 0 ? prepLines.map(a => `> ${a.trim()} ✅`).join('\n')   : '> -';
+      const allActivities = [
+        ...happyLines.map(a => ({ text: a.trim(), happy: true })),
+        ...unhappyLines.map(a => ({ text: a.trim(), happy: false }))
+      ];
+      const activityList = allActivities.length > 0
+        ? allActivities.map((a, i) => `Activity Testing (${i + 1}):\n${a.text}${a.happy ? ' ✅' : ''}`).join('\n\n')
+        : 'Activity Testing (1):\n-';
+
+      // ── REPORT 1: DEPLOY TEST ──
+      reports[0] =
+`*Deployment Test - ${data.app} - ${data.project} *
+Jira Deployment Test URL = ${data.jira || '-'}
+Jira Deployment Test Status = ${getJiraStatus(data.status)}
+Jira Deployment Test Last Update = ${lastUpdate}
+
+Project Name  : ${data.app} - ${data.project}
+
+No Ticket iRIS : ${data.ticket || '-'}
+
+Application/Subject : ${data.app || '-'}
+Start Time : ${data.deployDate} ${data.startTime}
+End Time : ${data.deployDate} ${data.endTime}
+Category : ${data.cat}
+Type     : ${data.type}
+
+Application/Subject Criticality : ${data.crit}
+
+Report Post Live Monitoring :          
+
+Happy Flow
+${happyForDeploy}
+
+Unhappy Flow : ${unhappyForDeploy}
+
+Notes :
+${data.notes || '-'}
+
+PIC         
+Dev   : ${data.dev || '-'}
+QA    : ${data.qa || '-'}
+Ops  :  ${data.ops || '-'}
+PO : ${data.po || '-'}
+
+Deploy Status: ${getStatusStr(data.status)} 
+
+Terima kasih 🙏🏼`;
+
+      // ── REPORT 2: AKTIVITAS TESTING ──
+      reports[1] =
+`*Update Report Aktivitas Testing*
+Nama Aplikasi: ${data.app}
+Nama Project : ${data.project}
+Link Jira project : ${data.jira || '-'}
+Metode pengembangan: ${data.cat}
+
+*Scope pengembangan :*
+1.Latar Belakang:
+${data.bg || '-'}
+
+2.Tujuan Perubahan : ${data.purpose || '-'}
+
+3.Outcome:
+${data.outcome || '-'}
+
+4.Rencana Deployment: ${data.deployDate}
+5.Mulai aktivitas pengujian: ${data.testStart}
+\t
+*Progres Testing:*
+*Ready to Deploy*
+1. Data Preparation:
+${prepForReport}
+
+ 
+2. SIT: jumlah TC ${totalSitTC} ✅
+> Happy: ${data.sitHappy}✅
+> Unhappy: ${data.sitUnhappy}
+> Defect: ${data.sitDefect} 
+
+3. UAT: jumlah TC
+> Happy: ${data.uatHappy}
+> Unhappy: ${data.uatUnhappy}
+> Defect: ${data.uatDefect}
+
+4. Note: 
+>  ${data.notes || ''}
+
+
+PIC :
+PIC PO / User : ${data.dev || '-'}
+Test Lead : ${data.tl || '-'}
+Tester : ${data.tester || '-'}`;
+
+      // ── REPORT 3: READINESS ──
+      reports[2] =
+`Deployment Readiness Report
+Nama Aplikasi : ${data.app}
+Nama Project : ${data.project}
+Link Jira project : ${data.jira || '-'}
+
+Scope pengembangan : 
+Latar Belakang:
+${data.bg || '-'}
+
+Tujuan Perubahan : 
+${data.purpose || '-'}
+
+Outcome:
+
+${data.outcome || '-'}
+
+Deployment surrounding apps : -
+Surrounding apps terdampak : -
+
+Summary Pengujian 
+Tanggal Pembuatan SOP Verification : ${data.testStart}
+Jumlah TC SIT/UAT :${totalSitTC} TC 
+happy flow :${data.sitHappy} TC 
+
+unhappy flow :${data.sitUnhappy} TC 
+
+${activityList}
+
+Jumlah defect pengujian : ${data.sitDefect || '-'}
+
+${'--'.repeat(55)}
+
+Strategi Deployment 
+No Tiket NCM : ${data.ticket || '-'}
+Strategi deploy : ${data.type}
+* Start: ${data.deployDate} pukul ${data.startTime} WIB
+* End: ${data.deployDate} pukul ${data.endTime} WIB
+
+Notes: ${data.notes || '-'}
+
+Plan Deployment Test 
+Jumlah TC Happy Flow : ${data.sitHappy}
+${happyLines.length > 0 ? happyLines.map(a => `- ${a.trim()} ✅`).join('\n') : '-'}
+
+Jumlah TC Unhappy Flow : ${data.sitUnhappy}
+${unhappyLines.length > 0 ? unhappyLines.map(a => `- ${a.trim()}`).join('\n') : ''}
+
+Jumlah TC 
+Regresi : -
+
+PIC PO / User: ${data.po || '-'}
+Test Lead: ${data.tl || '-'}
+Tester: ${data.tester || '-'}`;
+
+      const rb = document.getElementById('result-box');
+      rb.style.display = 'block';
+      showTab(0);
+      setTimeout(() => rb.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+
+    const tabLabels = ['Deploy Test Report', 'Update Report Aktivitas Testing', 'Deployment Readiness Report'];
+
+    function showTab(i) {
+      currentTab = i;
+      document.querySelectorAll('.t-btn').forEach((b, idx) => b.className = 't-btn' + (idx === i ? ' active' : ''));
+      document.getElementById('report-content').textContent = reports[i];
+      document.getElementById('out-label').textContent = tabLabels[i];
+      const cb = document.getElementById('copy-btn');
+      cb.textContent = 'Salin';
+      cb.className = 'copy-btn';
+    }
+
+    function copyReport() {
+      navigator.clipboard.writeText(reports[currentTab]).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Tersalin!';
+        btn.className = 'copy-btn copied';
+        setTimeout(() => { btn.textContent = 'Salin'; btn.className = 'copy-btn'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
