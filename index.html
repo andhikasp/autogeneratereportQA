@@ -516,17 +516,32 @@ function generate() {
   const unhappyLines = lines(g('unhappy_activities'));
   const defectLines  = lines(g('defect_notes'));
 
-  const totalSitTC = parseInt(d.sitHappy) + parseInt(d.sitUnhappy);
+  // TC count: pakai jumlah baris aktivitas jika diisi, fallback ke angka manual
+  const sitHappyCount   = happyLines.length   > 0 ? happyLines.length   : parseInt(d.sitHappy)   || 0;
+  const sitUnhappyCount = unhappyLines.length > 0 ? unhappyLines.length : parseInt(d.sitUnhappy) || 0;
+  const sitDefectCount  = defectLines.length  > 0 ? defectLines.length  : parseInt(d.sitDefect)  || 0;
+  const totalSitTC      = sitHappyCount + sitUnhappyCount;
+
   const lastUpdate = d.deployDate !== '-'
     ? `${d.deployDate}, ${d.endTime !== '-' ? d.endTime : '-'}` : '-';
 
-  // ── blocks ──
-  const happyDeploy   = happyLines.length   > 0 ? happyLines.map(a   => ` # ${a} ✅`).join('\n') : ' # -';
-  const unhappyDeploy = unhappyLines.length > 0 ? unhappyLines.map(a => ` # ${a}`).join('\n')    : (parseInt(d.sitUnhappy) || 0);
-  const prepBlock     = prepLines.length    > 0 ? prepLines.map(a    => `> ${a} ✅`).join('\n')  : '> -';
+  // strip trailing ✅ atau ⏳ dari input user supaya tidak double
+  function stripMark(s) { return s.replace(/[\u2705\u23F3\s]+$/g, '').trimEnd(); }
 
-  // readiness activity block — happy + unhappy numbered separately
-  const happyActBlock   = happyLines.map((a,i)   => `Activity Testing (${i+1}):\n${a} ✅`).join('\n\n') || 'Activity Testing (1):\n-';
+  // ── blocks ──
+  // deploy test: tampilkan apa adanya dari user (tidak tambah ✅ lagi)
+  const happyDeploy   = happyLines.length   > 0 ? happyLines.map(a   => ` # ${a}`).join('\n') : ' # -';
+  const unhappyDeploy = unhappyLines.length > 0 ? unhappyLines.map(a => ` # ${a}`).join('\n') : sitUnhappyCount;
+  const prepBlock     = prepLines.length    > 0 ? prepLines.map(a    => `> ${a}`).join('\n')  : '> -';
+
+  // aktivitas testing: tampilkan apa adanya (user sudah kasih ✅/⏳ sendiri)
+  const happyListBlock   = happyLines.length   > 0 ? happyLines.map((a,i)   => `> ${i+1}. ${a}`).join('\n') : '> -';
+  const unhappyListBlock = unhappyLines.length > 0 ? unhappyLines.map((a,i) => `> ${i+1}. ${a}`).join('\n') : '> -';
+
+  // readiness activity block
+  const happyActBlock   = happyLines.length > 0
+    ? happyLines.map((a,i) => `Activity Testing (${i+1}):\n${a}`).join('\n\n')
+    : 'Activity Testing (1):\n-';
   const unhappyActBlock = unhappyLines.length > 0
     ? '\n\n' + unhappyLines.map((a,i) => `Activity Testing Unhappy (${i+1}):\n${a}`).join('\n\n')
     : '';
@@ -598,15 +613,15 @@ ${prepBlock}
 
  
 2. SIT: jumlah TC ${totalSitTC} ✅
-> Happy: ${d.sitHappy} ✅
-> Unhappy: ${d.sitUnhappy}
-> Defect: ${d.sitDefect}
+> Happy: ${sitHappyCount} ✅
+> Unhappy: ${sitUnhappyCount}
+> Defect: ${sitDefectCount}
 
 Happy Flow :
-${happyLines.length > 0 ? happyLines.map((a,i) => `> ${i+1}. ${a} ✅`).join('\n') : '> -'}
+${happyListBlock}
 
 Unhappy Flow :
-${unhappyLines.length > 0 ? unhappyLines.map((a,i) => `> ${i+1}. ${a}`).join('\n') : '> -'}
+${unhappyListBlock}
 
 Defect :
 ${defectLines.length > 0 ? defectLines.map((a,i) => `> ${i+1}. ${a}`).join('\n') : '> -'}
@@ -649,13 +664,13 @@ Surrounding apps terdampak : -
 Summary Pengujian 
 Tanggal Pembuatan SOP Verification : ${d.testStart}
 Jumlah TC SIT/UAT :${totalSitTC} TC 
-happy flow :${d.sitHappy} TC 
+happy flow :${sitHappyCount} TC 
 
-unhappy flow :${d.sitUnhappy} TC 
+unhappy flow :${sitUnhappyCount} TC 
 
 ${activityBlock}
 
-Jumlah defect pengujian : ${d.sitDefect || '-'}${defectLines.length > 0 ? '\n' + defectLines.map((a,i) => `Defect (${i+1}): ${a}`).join('\n') : ''}
+Jumlah defect pengujian : ${sitDefectCount}${defectLines.length > 0 ? '\n' + defectLines.map((a,i) => `Defect (${i+1}): ${a}`).join('\n') : ''}
 
 ${'--'.repeat(55)}
 
@@ -668,10 +683,10 @@ Strategi deploy : ${d.type}
 Notes: ${d.notes || '-'}
 
 Plan Deployment Test 
-Jumlah TC Happy Flow : ${d.sitHappy}
-${happyLines.length > 0 ? happyLines.map(a => `- ${a} ✅`).join('\n') : '-'}
+Jumlah TC Happy Flow : ${sitHappyCount}
+${happyLines.length > 0 ? happyLines.map(a => `- ${a}`).join('\n') : '-'}
 
-Jumlah TC Unhappy Flow : ${d.sitUnhappy}
+Jumlah TC Unhappy Flow : ${sitUnhappyCount}
 ${unhappyLines.length > 0 ? unhappyLines.map(a => `- ${a}`).join('\n') : '-'}
 
 Jumlah TC 
