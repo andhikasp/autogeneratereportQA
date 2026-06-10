@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QA Report Generator</title>
+  <title>QA Report Generator Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,600;1,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -22,709 +22,699 @@
       --text3:    #8b92b8;
       --accent:   #4f46e5;
       --accent-g: rgba(79,70,229,.15);
-      --accent2:  #0ea5e9;
-      --success:  #059669;
-      --success-b:#d1fae5;
-      --warn:     #d97706;
-      --warn-b:   #fef3c7;
-      --info:     #0284c7;
-      --info-b:   #e0f2fe;
-      --danger:   #dc2626;
-      --danger-b: #fee2e2;
+      --success:  #059669; --success-b:#d1fae5;
+      --warn:     #d97706; --warn-b:  #fef3c7;
+      --danger:   #dc2626; --danger-b: #fee2e2;
+      --info:     #0284c7; --info-b:  #e0f2fe;
       --purple-b: #ede9fe;
       --font:     'DM Sans', sans-serif;
       --mono:     'DM Mono', monospace;
-      --r:        10px;
-      --r2:       14px;
+      --r:        8px; --r2: 12px;
       --shadow:   0 1px 3px rgba(79,70,229,.08), 0 4px 16px rgba(79,70,229,.06);
-      --shadow2:  0 2px 8px rgba(79,70,229,.12), 0 8px 32px rgba(79,70,229,.08);
     }
 
-    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
 
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.6;
+    /* LAYOUT: SIDEBAR & MAIN */
+    .sidebar {
+      width: 280px; background: var(--card); border-right: 1.5px solid var(--border);
+      display: flex; flex-direction: column; z-index: 10;
     }
-
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(79,70,229,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,70,229,.035) 1px, transparent 1px);
-      background-size: 36px 36px;
-      pointer-events: none; z-index: 0;
+    
+    .sidebar-header { padding: 1.25rem; border-bottom: 1.5px solid var(--border); }
+    .sidebar-header h2 { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .sidebar-header h2::before { content:''; width:8px; height:8px; background:var(--accent); border-radius:50%; }
+    
+    .new-task-btn {
+      width: 100%; margin-top: 1rem; padding: 10px; font-size: 13px; font-weight: 600;
+      background: var(--purple-b); color: var(--accent); border: 1.5px dashed var(--accent);
+      border-radius: var(--r); cursor: pointer; transition: all .2s; font-family: var(--font);
     }
+    .new-task-btn:hover { background: var(--accent); color: #fff; }
 
-    .container {
-      max-width: 720px; margin: 0 auto;
-      padding: 0 1.25rem 4rem;
-      position: relative; z-index: 1;
+    .task-list { flex: 1; overflow-y: auto; padding: 1rem; }
+    .task-item {
+      padding: 12px; border-radius: var(--r); margin-bottom: 8px; cursor: pointer;
+      border: 1.5px solid transparent; background: var(--card2); transition: all .2s;
+      position: relative;
     }
-
-    /* HERO */
-    .hero {
-      padding: 2.5rem 0 1.75rem;
-      border-bottom: 1.5px solid var(--border);
-      margin-bottom: 1.75rem;
+    .task-item:hover { border-color: var(--border2); }
+    .task-item.active { background: #fff; border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-g); }
+    .task-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 20px;}
+    .task-date { font-size: 11px; color: var(--text3); }
+    
+    .delete-task {
+      position: absolute; right: 10px; top: 12px; color: var(--text3); font-size: 14px;
+      cursor: pointer; opacity: 0; transition: opacity .2s;
     }
+    .task-item:hover .delete-task { opacity: 1; }
+    .delete-task:hover { color: var(--danger); }
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-size: 11px; font-weight: 600; letter-spacing:.08em; text-transform: uppercase;
-      color: var(--accent); background: var(--purple-b);
-      border: 1.5px solid rgba(79,70,229,.22);
-      padding: 4px 12px; border-radius: 20px; margin-bottom: .9rem;
+    .main-content {
+      flex: 1; overflow-y: auto; position: relative; padding: 2rem; scroll-behavior: smooth;
     }
-
-    .hero-badge::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent); animation: pulse 2s ease-in-out infinite;
+    .main-content::before {
+      content: ''; position: fixed; inset: 0; left: 280px;
+      background-image: linear-gradient(rgba(79,70,229,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(79,70,229,.035) 1px, transparent 1px);
+      background-size: 36px 36px; pointer-events: none; z-index: 0;
     }
+    .container { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; padding-bottom: 4rem;}
 
-    @keyframes pulse {
-      0%,100%{ opacity:1; transform:scale(1); }
-      50%{ opacity:.3; transform:scale(.75); }
-    }
+    /* CARDS & FIELDS */
+    .step-label { font-size: 11px; font-weight: 700; letter-spacing:.08em; text-transform: uppercase; color: var(--text3); margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 8px; margin-top: 2rem;}
+    .step-label::before { content: attr(data-n); font-size: 9px; background: var(--accent); color: #fff; border-radius: 5px; padding: 2px 6px; }
+    .step-label:first-child { margin-top: 0; }
 
-    .hero h1 { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing:-.025em; margin-bottom:.3rem; }
-    .hero p  { font-size: 14px; color: var(--text2); }
-
-    /* STEP LABELS */
-    .step-label {
-      font-size: 10.5px; font-weight: 600; letter-spacing:.1em; text-transform: uppercase;
-      color: var(--text3); margin-bottom: .85rem; padding-bottom: .5rem;
-      border-bottom: 1.5px solid var(--border);
-      display: flex; align-items: center; gap: 8px;
-    }
-
-    .step-label::before {
-      content: attr(data-n); font-size: 9px;
-      background: var(--accent); color: #fff;
-      border-radius: 5px; padding: 1px 6px; font-weight: 600;
-    }
-
-    /* CARDS */
-    .card {
-      background: var(--card); border: 1.5px solid var(--border);
-      border-radius: var(--r2); padding: 1.35rem; margin-bottom: .75rem;
-      box-shadow: var(--shadow); transition: border-color .2s, box-shadow .2s;
-    }
-
-    .card:focus-within { border-color: var(--border2); box-shadow: var(--shadow2); }
-
-    /* FIELDS */
-    .field { margin-bottom: .9rem; }
-    .field:last-child { margin-bottom: 0; }
-
-    .field label {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; color: var(--text2); margin-bottom: 5px;
-      font-weight: 600; letter-spacing:.01em;
-    }
-
+    .card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--r2); padding: 1.5rem; box-shadow: var(--shadow); }
+    .field { margin-bottom: 1rem; } .field:last-child { margin-bottom: 0; }
+    .field label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text2); margin-bottom: 6px; font-weight: 600; }
     .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-
-    input[type="text"], input[type="date"], input[type="time"],
-    input[type="number"], select, textarea {
-      width: 100%; background: var(--card2); border: 1.5px solid var(--border);
-      border-radius: var(--r); padding: 9px 12px;
-      font-size: 13.5px; color: var(--text); font-family: var(--font);
-      transition: border-color .15s, background .15s, box-shadow .15s;
-      outline: none; appearance: none;
+    
+    input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea {
+      width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--r); padding: 10px 12px;
+      font-size: 13.5px; color: var(--text); font-family: var(--font); transition: all .2s; outline: none;
     }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px var(--accent-g); }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+    
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
-    input:hover, select:hover, textarea:hover { border-color: var(--border2); }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent); background: #fff;
-      box-shadow: 0 0 0 3px var(--accent-g);
+    /* CHECKLIST TOGGLE UI */
+    .ch-builder { display: flex; gap: 8px; margin-bottom: 12px; }
+    .ch-add-btn { padding: 0 16px; background: var(--text); color: white; border: none; border-radius: var(--r); font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .ch-list { display: flex; flex-direction: column; gap: 6px; }
+    .ch-item { display: flex; align-items: center; gap: 10px; background: var(--card2); padding: 8px 12px; border-radius: var(--r); border: 1.5px solid var(--border); }
+    .ch-text { flex: 1; font-size: 13.5px; }
+    .ch-toggle { 
+      padding: 4px 10px; font-size: 13px; border-radius: 6px; border: none; cursor: pointer; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: transform .1s;
     }
-
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity:.5; }
-
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b92b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
-      padding-right: 32px; cursor: pointer;
-    }
-
-    textarea { resize: vertical; min-height: 80px; line-height: 1.65; }
-
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    @media (max-width:500px) { .row2,.row3 { grid-template-columns:1fr; } }
-
-    /* TC */
-    .tc-section { margin-bottom: 1rem; }
-    .tc-header { font-size:12px; color:var(--text2); font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-    .tc-badge { font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600; }
-    .badge-sit { background:var(--purple-b); color:var(--accent); border:1.5px solid rgba(79,70,229,.25); }
-    .badge-uat { background:var(--info-b);   color:var(--info);   border:1.5px solid rgba(2,132,199,.25); }
-    .divider { height:1.5px; background:var(--border); margin:.75rem 0 1rem; }
-
-    /* PIC */
-    .pic-grid { display:grid; grid-template-columns:72px 1fr; gap:8px; align-items:center; margin-bottom:7px; }
-    .pic-grid:last-child { margin-bottom:0; }
-    .pic-grid label { font-size:12px; color:var(--text3); font-weight:600; }
-
-    /* STATUS */
-    .status-group { display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
-
-    .s-btn {
-      padding:6px 14px; font-size:12px; font-weight:600; border-radius:20px;
-      cursor:pointer; border:1.5px solid var(--border2);
-      background:var(--card2); color:var(--text2);
-      transition:all .15s; font-family:var(--font);
-    }
-
-    .s-btn:hover { color:var(--text); background:var(--bg2); }
-    .s-btn.act-success  { background:var(--success-b); color:var(--success); border-color:#6ee7b7; }
-    .s-btn.act-progress { background:var(--warn-b);    color:var(--warn);    border-color:#fcd34d; }
-    .s-btn.act-back     { background:var(--info-b);    color:var(--info);    border-color:#7dd3fc; }
-    .s-btn.act-fail     { background:var(--danger-b);  color:var(--danger);  border-color:#fca5a5; }
+    .ch-toggle:active { transform: scale(0.95); }
+    .ch-del { color: var(--text3); cursor: pointer; font-size: 16px; background: none; border: none; padding: 0 4px; }
+    .ch-del:hover { color: var(--danger); }
 
     /* BUTTONS */
-    .btn-row { display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:1rem; }
+    .btn-row { display: flex; gap: 12px; margin-top: 2rem; }
+    .gen-btn { padding: 14px 24px; font-size: 14.5px; font-weight: 600; border-radius: var(--r2); cursor: pointer; background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%); border: none; color: #fff; box-shadow: 0 4px 16px rgba(79,70,229,.3); font-family: var(--font); flex: 1;}
+    .gen-btn:hover { opacity:.92; transform: translateY(-1px); }
+    
+    /* RESULT TABS */
+    .result-box { margin-top: 2rem; display: none; }
+    .tab-row { display: flex; gap: 8px; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 4px;}
+    .t-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--border); background: var(--card); color: var(--text3); transition: all .2s; font-family: var(--font); white-space: nowrap;}
+    .t-btn:hover { color: var(--text2); border-color: var(--border2); }
+    .t-btn.active { border-color: var(--accent); color: var(--accent); background: var(--purple-b); }
 
-    .gen-btn {
-      padding:13px; font-size:14.5px; font-weight:600; border-radius:var(--r2);
-      cursor:pointer; background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);
-      border:none; color:#fff; letter-spacing:.02em;
-      transition:opacity .15s,transform .12s,box-shadow .15s;
-      font-family:var(--font); box-shadow:0 4px 16px rgba(79,70,229,.35);
-    }
-
-    .gen-btn:hover  { opacity:.92; box-shadow:0 6px 24px rgba(79,70,229,.45); }
-    .gen-btn:active { transform:scale(.99); }
-
-    .reset-btn {
-      padding:13px 18px; font-size:13px; font-weight:600; border-radius:var(--r2);
-      cursor:pointer; background:var(--card); border:1.5px solid var(--border2);
-      color:var(--text2); transition:all .15s; font-family:var(--font); white-space:nowrap;
-    }
-
-    .reset-btn:hover { background:var(--danger-b); color:var(--danger); border-color:#fca5a5; }
-
-    /* RESULT */
-    .result-box { margin-top:2rem; display:none; }
-
-    .tab-row { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:.9rem; }
-
-    .t-btn {
-      padding:6px 14px; font-size:12px; font-weight:600; border-radius:20px;
-      cursor:pointer; border:1.5px solid var(--border); background:var(--card);
-      color:var(--text3); transition:all .15s; font-family:var(--font);
-    }
-
-    .t-btn:hover { color:var(--text2); border-color:var(--border2); }
-    .t-btn.active { border-color:var(--accent); color:var(--accent); background:var(--purple-b); }
-
-    .out-card {
-      background:var(--card); border:1.5px solid var(--border);
-      border-radius:var(--r2); padding:1.35rem; position:relative;
-      box-shadow:var(--shadow);
-    }
-
-    .out-label { font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text3); margin-bottom:.85rem; }
-
-    .copy-btn {
-      position:absolute; top:1.1rem; right:1.1rem;
-      padding:5px 12px; font-size:11.5px; font-weight:600; border-radius:7px;
-      cursor:pointer; border:1.5px solid var(--border2);
-      background:var(--card2); color:var(--text2); transition:all .15s; font-family:var(--font);
-    }
-
-    .copy-btn:hover { color:var(--accent); border-color:var(--accent); background:var(--purple-b); }
-    .copy-btn.copied { color:var(--success); border-color:#6ee7b7; background:var(--success-b); }
-
-    .report-text {
-      font-family:var(--mono); font-size:12.5px; color:var(--text);
-      white-space:pre-wrap; line-height:1.85; padding-top:.25rem;
-    }
+    .out-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--r2); padding: 1.5rem; position: relative; box-shadow: var(--shadow); }
+    .copy-btn { position: absolute; top: 1.25rem; right: 1.25rem; padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1.5px solid var(--accent); background: var(--purple-b); color: var(--accent); transition: all .15s; font-family: var(--font); }
+    .copy-btn:hover { background: var(--accent); color: #fff; }
+    .report-text { font-family: var(--mono); font-size: 12.5px; color: var(--text); white-space: pre-wrap; line-height: 1.7; padding-top: 2rem; }
 
     /* TOAST */
-    .toast {
-      position:fixed; bottom:1.5rem; right:1.5rem;
-      background:var(--text); color:#fff; font-size:13px; font-weight:500;
-      padding:10px 18px; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.15);
-      opacity:0; transform:translateY(8px); transition:all .25s; pointer-events:none; z-index:999;
-    }
-    .toast.show { opacity:1; transform:translateY(0); }
-
-    .footer {
-      margin-top:3rem; padding-top:1.5rem;
-      border-top:1.5px solid var(--border);
-      text-align:center; font-size:12px; color:var(--text3);
-    }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; font-size: 13.5px; font-weight: 500; padding: 12px 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.15); opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; transform: translateY(0); }
   </style>
 </head>
 <body>
-<div class="container">
 
-  <div class="hero">
-    <div class="hero-badge">QA Report System</div>
-    <h1>Report Generator</h1>
-    <p>Isi form di bawah — generate 3 report sekaligus dalam hitungan detik</p>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h2>QA Workspace</h2>
+    <button class="new-task-btn" onclick="createNewTask()">+ Buat Task Baru</button>
   </div>
-
-  <!-- 01 INFO PROYEK -->
-  <div class="step-label" data-n="01">Info Proyek</div>
-  <div class="card">
-    <div class="field"><label><span class="dot"></span>Nama Aplikasi</label><input type="text" id="app_name" placeholder="EFS SAP" /></div>
-    <div class="field"><label><span class="dot"></span>Nama Project</label><input type="text" id="project_name" placeholder="Patching Data - Update data PAR G/L Posisi Maret 2026" /></div>
-    <div class="row2">
-      <div class="field"><label>Link Jira</label><input type="text" id="jira_link" placeholder="https://jira.bri.co.id/browse/NOE..." /></div>
-      <div class="field"><label>No. Tiket NCM / iRIS</label><input type="text" id="ticket_no" placeholder="NCM2604..." /></div>
+  <div class="task-list" id="task-list-container">
     </div>
-    <div class="row2">
-      <div class="field"><label>Kategori</label>
-        <select id="category"><option>Agile</option><option>OPS</option><option>Waterfall</option></select>
+</div>
+
+<div class="main-content">
+  <div class="container">
+    
+    <div class="step-label" data-n="01">Info Proyek & Sistem</div>
+    <div class="card">
+      <div class="row2">
+        <div class="field"><label><span class="dot"></span>Nama Aplikasi</label><input type="text" id="app_name" placeholder="EFS Modul FPSL Technical" /></div>
+        <div class="field"><label><span class="dot"></span>Nama Project</label><input type="text" id="project_name" placeholder="EFS-Technical-N-2026-002..." /></div>
       </div>
-      <div class="field"><label>Tipe</label>
-        <select id="type"><option>Rollout</option><option>Hotfix</option><option>Maintenance</option></select>
+      <div class="row2">
+        <div class="field"><label>Link Jira</label><input type="text" id="jira_link" placeholder="https://jira.bri.co.id/browse/..." /></div>
+        <div class="field"><label>Link iRIS</label><input type="text" id="iris_link" placeholder="https://iris.bri.co.id/HEAT/..." /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>No. Tiket NCM</label><input type="text" id="ticket_no" placeholder="NCM2605..." /></div>
+        <div class="field"><label>Kategori (Metode)</label><input type="text" id="category" placeholder="Waterfall / Agile" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Tipe Deploy</label><input type="text" id="type" placeholder="Rollout / Hotfix" /></div>
+        <div class="field"><label>Criticality</label><select id="criticality"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
       </div>
     </div>
-    <div class="field"><label>Criticality Aplikasi</label>
-      <select id="criticality"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
-    </div>
-  </div>
 
-  <!-- 02 LATAR BELAKANG -->
-  <div class="step-label" data-n="02">Latar Belakang & Tujuan</div>
-  <div class="card">
-    <div class="field"><label>Latar Belakang</label><textarea id="background" placeholder="Jelaskan permasalahan atau konteks..."></textarea></div>
-    <div class="field"><label>Tujuan Perubahan</label><textarea id="purpose" placeholder="Apa yang ingin dicapai..."></textarea></div>
-    <div class="field"><label>Outcome</label><textarea id="outcome" placeholder="Hasil yang diharapkan..."></textarea></div>
-  </div>
-
-  <!-- 03 TANGGAL -->
-  <div class="step-label" data-n="03">Tanggal & Waktu</div>
-  <div class="card">
-    <div class="row2">
-      <div class="field"><label>Mulai Aktivitas Testing</label><input type="date" id="test_start" /></div>
-      <div class="field"><label>Rencana Deployment</label><input type="date" id="deploy_date" /></div>
+    <div class="step-label" data-n="02">Scope Pengembangan</div>
+    <div class="card">
+      <div class="field"><label>1. Latar Belakang</label><textarea id="background" placeholder="Pengelolaan user dan role di SAP saat ini masih..."></textarea></div>
+      <div class="field"><label>2. Tujuan Perubahan</label><textarea id="purpose" placeholder="Integrasi SAP-IDM bertujuan untuk..."></textarea></div>
+      <div class="field"><label>3. Outcome</label><textarea id="outcome" placeholder="Proses pengelolaan akses user menjadi lebih cepat..."></textarea></div>
     </div>
-    <div class="row2">
-      <div class="field"><label>Start Time Deploy</label><input type="time" id="start_time" /></div>
-      <div class="field"><label>End Time Deploy</label><input type="time" id="end_time" /></div>
-    </div>
-  </div>
 
-  <!-- 04 TEST CASE -->
-  <div class="step-label" data-n="04">Test Case</div>
-  <div class="card">
-    <div class="tc-section">
-      <div class="tc-header">SIT <span class="tc-badge badge-sit">System Integration Test</span></div>
+    <div class="step-label" data-n="03">Tanggal & Waktu</div>
+    <div class="card">
       <div class="row3">
-        <div class="field"><label>Happy Flow</label><input type="number" id="sit_happy" value="0" min="0" /></div>
-        <div class="field"><label>Unhappy Flow</label><input type="number" id="sit_unhappy" value="0" min="0" /></div>
-        <div class="field"><label>Defect</label><input type="number" id="sit_defect" value="0" min="0" /></div>
+        <div class="field"><label>Tanggal SIT</label><input type="date" id="sit_date" /></div>
+        <div class="field"><label>Tanggal UAT</label><input type="date" id="uat_date" /></div>
+        <div class="field"><label>Rencana Deploy</label><input type="date" id="deploy_date" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Start Time Deploy</label><input type="time" id="start_time" /></div>
+        <div class="field"><label>End Time Deploy</label><input type="time" id="end_time" /></div>
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="tc-section">
-      <div class="tc-header">UAT <span class="tc-badge badge-uat">User Acceptance Test</span></div>
+
+    <div class="step-label" data-n="04">Test Case & Aktivitas</div>
+    <div class="card">
       <div class="row3">
-        <div class="field"><label>Happy Flow</label><input type="number" id="uat_happy" value="0" min="0" /></div>
-        <div class="field"><label>Unhappy Flow</label><input type="number" id="uat_unhappy" value="0" min="0" /></div>
-        <div class="field"><label>Defect</label><input type="number" id="uat_defect" value="0" min="0" /></div>
+        <div class="field"><label>Total TC SIT/UAT</label><input type="number" id="tc_total" value="0" /></div>
+        <div class="field"><label>Happy Flow Count</label><input type="number" id="tc_happy" value="0" /></div>
+        <div class="field"><label>Unhappy Flow Count</label><input type="number" id="tc_unhappy" value="0" /></div>
+      </div>
+      <div class="row3" style="margin-top:-10px; margin-bottom:15px;">
+        <div class="field"><label>Defect Count</label><input type="number" id="tc_defect" value="0" /></div>
+        <div class="field"><label>TC Regresi</label><input type="text" id="tc_regresi" value="-" placeholder="0 / -" /></div>
+      </div>
+      
+      <div class="field" style="border-top: 1.5px solid var(--border); padding-top: 15px;">
+        <label><span class="dot"></span>Data Preparation (SIT/UAT)</label>
+        <textarea id="data_prep" placeholder="> Data Dummy User Management IDM ✅"></textarea>
+      </div>
+      
+      <div class="field" style="border-top: 1.5px dashed var(--border); padding-top: 15px; margin-top: 15px;">
+        <label><span class="dot"></span>Checklist Deployment Test (Happy Flow)</label>
+        <div class="ch-builder">
+          <input type="text" id="ch_input" placeholder="Ketik aktivitas (ex: Fetch Data User) lalu Enter" onkeypress="if(event.key==='Enter') addChecklist()" />
+          <button class="ch-add-btn" onclick="addChecklist()">Add</button>
+        </div>
+        <div class="ch-list" id="checklist_container"></div>
+      </div>
+
+      <div class="field" style="margin-top: 15px;">
+        <label>List Detail TC (Opsional untuk Readiness)</label>
+        <textarea id="tc_details" placeholder="1. [MFA][Joiner] Fetch New User...&#10;2. [MFA][Joiner] Role Tab is Empty..." style="min-height: 120px;"></textarea>
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="field"><label><span class="dot"></span>Data Preparation (satu per baris)</label><textarea id="data_prep" placeholder="File Recon ZTPAPM&#10;File lainnya..."></textarea></div>
-    <div class="field"><label><span class="dot"></span>Happy Flow — aktivitas yang diverifikasi (satu per baris)</label><textarea id="happy_activities" placeholder="Verifikasi Querry SQL&#10;Verifikasi Posting Date After Querry"></textarea></div>
-    <div class="field"><label>Unhappy Flow — aktivitas (satu per baris, kosongkan jika tidak ada)</label><textarea id="unhappy_activities" placeholder="Verifikasi error handling saat data tidak valid"></textarea></div>
-    <div class="field"><label>Defect — deskripsi (satu per baris, kosongkan jika tidak ada)</label><textarea id="defect_notes" placeholder="Deskripsi defect yang ditemukan..."></textarea></div>
-  </div>
 
-  <!-- 05 PIC -->
-  <div class="step-label" data-n="05">PIC</div>
-  <div class="card">
-    <div class="pic-grid"><label>Dev</label><input type="text" id="pic_dev" placeholder="Kode (Nama)" /></div>
-    <div class="pic-grid"><label>QA</label><input type="text" id="pic_qa" placeholder="Kode (Nama1, Nama2)" /></div>
-    <div class="pic-grid"><label>Ops</label><input type="text" id="pic_ops" placeholder="Kode (Nama)" /></div>
-    <div class="pic-grid"><label>PO</label><input type="text" id="pic_po" placeholder="Kode (Nama1, Nama2)" /></div>
-    <div class="pic-grid"><label>Test Lead</label><input type="text" id="pic_tl" placeholder="Nama (Kode)" /></div>
-    <div class="pic-grid"><label>Tester</label><input type="text" id="pic_tester" placeholder="Nama (Kode)" /></div>
-  </div>
+    <div class="step-label" data-n="05">PIC & Status Deploy</div>
+    <div class="card">
+      <div class="row2">
+        <div class="field"><label>Fungsi QA</label><input type="text" id="fungsi_qa" value="QA_QFN" /></div>
+        <div class="field"><label>Test Lead</label><input type="text" id="pic_tl" placeholder="Nama (Kode/Divisi)" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Tester</label><input type="text" id="pic_tester" value="Andhika Surya Putra (APS/QFN)" /></div>
+        <div class="field"><label>PO / User</label><input type="text" id="pic_po" placeholder="Nama (Kode/Divisi)" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Dev</label><input type="text" id="pic_dev" placeholder="Nama (Divisi)" /></div>
+        <div class="field"><label>Ops</label><input type="text" id="pic_ops" placeholder="Nama (Divisi)" /></div>
+      </div>
+      
+      <div class="field" style="border-top: 1.5px solid var(--border); padding-top: 15px;">
+        <label>Status Deploy Saat Ini</label>
+        <select id="deploy_status">
+          <option value="In Progress ⌛️">In Progress ⌛️</option>
+          <option value="Done ✅">Done ✅</option>
+          <option value="Failed ❌">Failed ❌</option>
+        </select>
+      </div>
+      <div class="field"><label>Notes / Keterangan</label><textarea id="notes" placeholder="Menunggu Hasil Background Job pada pagi hari..."></textarea></div>
+    </div>
 
-  <!-- 06 STATUS -->
-  <div class="step-label" data-n="06">Status & Notes</div>
-  <div class="card">
-    <div class="field">
-      <label>Status Deploy</label>
-      <div class="status-group">
-        <button class="s-btn act-success" id="btn-success"  onclick="setStatus('success')">✅ Success</button>
-        <button class="s-btn"             id="btn-progress" onclick="setStatus('progress')">🔄 On Progress</button>
-        <button class="s-btn"             id="btn-back"     onclick="setStatus('back')">🔁 Back to Dev</button>
-        <button class="s-btn"             id="btn-fail"     onclick="setStatus('fail')">❌ Failed</button>
+    <div class="btn-row">
+      <button class="gen-btn" onclick="generateReport()">Buka Laporan Ter-Generate 📄</button>
+    </div>
+
+    <div class="result-box" id="result-box">
+      <div class="tab-row">
+        <button class="t-btn active" onclick="showTab(0)">Deploy Test Report</button>
+        <button class="t-btn" onclick="showTab(1)">Aktivitas Testing</button>
+        <button class="t-btn" onclick="showTab(2)">Readiness Report</button>
+      </div>
+      <div class="out-card">
+        <button class="copy-btn" id="copy-btn" onclick="copyReport()">Salin Text</button>
+        <div class="report-text" id="report-content"></div>
       </div>
     </div>
-    <div class="field" style="margin-top:.9rem"><label>Notes tambahan</label><textarea id="notes" placeholder="Catatan pasca deploy, temuan, dll..."></textarea></div>
-  </div>
 
-  <div class="btn-row">
-    <button class="gen-btn" onclick="generate()">Generate 3 Report ↗</button>
-    <button class="reset-btn" onclick="resetForm()">🗑 Reset Form</button>
   </div>
-
-  <!-- RESULT -->
-  <div class="result-box" id="result-box">
-    <div class="tab-row">
-      <button class="t-btn active" onclick="showTab(0)">Deploy Test</button>
-      <button class="t-btn"        onclick="showTab(1)">Aktivitas Testing</button>
-      <button class="t-btn"        onclick="showTab(2)">Readiness Report</button>
-    </div>
-    <div class="out-card">
-      <div class="out-label" id="out-label">Deploy Test Report</div>
-      <button class="copy-btn" id="copy-btn" onclick="copyReport()">Salin</button>
-      <div class="report-text" id="report-content"></div>
-    </div>
-  </div>
-
-  <div class="footer">QA Report Generator &mdash; IT Application Support Group</div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const FIELDS = [
-  'app_name','project_name','jira_link','ticket_no','category','type','criticality',
-  'background','purpose','outcome','test_start','deploy_date','start_time','end_time',
-  'sit_happy','sit_unhappy','sit_defect','uat_happy','uat_unhappy','uat_defect',
-  'data_prep','happy_activities','unhappy_activities','defect_notes',
-  'pic_dev','pic_qa','pic_ops','pic_po','pic_tl','pic_tester','notes'
+// --- STATE MANAGEMENT ---
+const STORE_KEY = 'qa_workspace_v2';
+let state = {
+  activeTaskId: null,
+  tasks: []
+};
+
+// Field dasar HTML yang langsung di-bind ke Object
+const BIND_FIELDS = [
+  'app_name','project_name','jira_link','iris_link','ticket_no','category','type','criticality',
+  'background','purpose','outcome','sit_date','uat_date','deploy_date','start_time','end_time',
+  'tc_total','tc_happy','tc_unhappy','tc_defect','tc_regresi','data_prep','tc_details',
+  'fungsi_qa','pic_tl','pic_tester','pic_po','pic_dev','pic_ops','deploy_status','notes'
 ];
 
-const CACHE_KEY = 'qa_report_cache_v1';
-let deployStatus = 'success';
-let reports = ['','',''];
+let generatedReports = ['','',''];
 let currentTab = 0;
 
-function setupAutoSave() {
-  FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', saveCache);
-  });
-}
+// --- INITIALIZATION ---
+function init() {
+  loadData();
+  if (state.tasks.length === 0) {
+    createNewTask();
+  } else {
+    if (!state.activeTaskId) state.activeTaskId = state.tasks[0].id;
+    renderSidebar();
+    loadTaskToForm(state.activeTaskId);
+  }
 
-function saveCache() {
-  const data = {};
-  FIELDS.forEach(id => {
+  // Setup Autosave Listeners
+  BIND_FIELDS.forEach(id => {
     const el = document.getElementById(id);
-    if (el) data[id] = el.value;
-  });
-  data['__status'] = deployStatus;
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e){}
-}
-
-function loadCache() {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    FIELDS.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && data[id] !== undefined) el.value = data[id];
+    if(el) el.addEventListener('input', () => {
+      saveActiveTaskData();
+      renderSidebar(); // Update judul di sidebar live
     });
-    if (data['__status']) setStatus(data['__status']);
-    showToast('Data terakhir berhasil dimuat 💾');
-  } catch(e){}
+  });
 }
 
-function resetForm() {
-  if (!confirm('Reset semua form? Data yang belum disimpan akan hilang.')) return;
-  FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (el.tagName === 'SELECT') el.selectedIndex = 0;
-    else if (el.type === 'number') el.value = '0';
-    else el.value = '';
+function saveData() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) state = JSON.parse(raw);
+  } catch(e) { console.error("Cache error", e); }
+}
+
+// --- TASK MANAGEMENT (SIDEBAR) ---
+function createNewTask() {
+  const newId = 'task_' + Date.now();
+  const newTask = {
+    id: newId,
+    created: new Date().toISOString(),
+    checklist: [], // Array of {text: '', status: '⌛️'}
+    data: {}       // Store BIND_FIELDS here
+  };
+  
+  // Set default values for new task
+  BIND_FIELDS.forEach(f => {
+    const el = document.getElementById(f);
+    newTask.data[f] = el ? (el.getAttribute('value') || '') : '';
   });
-  setStatus('success');
-  try { localStorage.removeItem(CACHE_KEY); } catch(e){}
+
+  state.tasks.unshift(newTask); // Taruh di atas
+  switchTask(newId);
+  showToast('Task baru dibuat 📝');
+}
+
+function switchTask(taskId) {
+  saveActiveTaskData(); // Simpan form saat ini dulu
+  state.activeTaskId = taskId;
+  loadTaskToForm(taskId);
+  renderSidebar();
   document.getElementById('result-box').style.display = 'none';
-  showToast('Form berhasil direset 🧹');
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function deleteTask(taskId, event) {
+  event.stopPropagation();
+  if(!confirm('Hapus task ini?')) return;
+  
+  state.tasks = state.tasks.filter(t => t.id !== taskId);
+  if(state.tasks.length === 0) {
+    createNewTask();
+  } else {
+    if(state.activeTaskId === taskId) switchTask(state.tasks[0].id);
+    else renderSidebar();
+  }
+  saveData();
 }
 
-function setStatus(s) {
-  deployStatus = s;
-  const map = { success:'act-success', progress:'act-progress', back:'act-back', fail:'act-fail' };
-  ['success','progress','back','fail'].forEach(k => {
-    document.getElementById('btn-'+k).className = 's-btn' + (k===s ? ' '+map[k] : '');
+function renderSidebar() {
+  const container = document.getElementById('task-list-container');
+  container.innerHTML = '';
+  
+  state.tasks.forEach(task => {
+    const title = task.data.app_name || task.data.project_name || 'Draft Baru';
+    const dateStr = new Date(task.created).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+    
+    const div = document.createElement('div');
+    div.className = `task-item ${task.id === state.activeTaskId ? 'active' : ''}`;
+    div.onclick = () => switchTask(task.id);
+    div.innerHTML = `
+      <div class="task-title">${title}</div>
+      <div class="task-date">Dibuat: ${dateStr}</div>
+      <button class="delete-task" onclick="deleteTask('${task.id}', event)">✖</button>
+    `;
+    container.appendChild(div);
   });
-  saveCache();
 }
 
+// --- FORM SYNCING ---
+function saveActiveTaskData() {
+  if(!state.activeTaskId) return;
+  const task = state.tasks.find(t => t.id === state.activeTaskId);
+  if(!task) return;
+  
+  BIND_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) task.data[id] = el.value;
+  });
+  saveData();
+}
+
+function loadTaskToForm(taskId) {
+  const task = state.tasks.find(t => t.id === taskId);
+  if(!task) return;
+  
+  BIND_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && task.data[id] !== undefined) el.value = task.data[id];
+  });
+  
+  renderChecklistUI();
+}
+
+// --- CHECKLIST FEATURE ---
+function addChecklist() {
+  const input = document.getElementById('ch_input');
+  const text = input.value.trim();
+  if(!text) return;
+  
+  const task = state.tasks.find(t => t.id === state.activeTaskId);
+  task.checklist.push({ text: text, status: '⌛️' });
+  input.value = '';
+  
+  saveData();
+  renderChecklistUI();
+}
+
+function toggleStatus(index) {
+  const task = state.tasks.find(t => t.id === state.activeTaskId);
+  const current = task.checklist[index].status;
+  
+  // Cycle: ⌛️ -> ✅ -> ❌ -> ⌛️
+  if(current === '⌛️') task.checklist[index].status = '✅';
+  else if(current === '✅') task.checklist[index].status = '❌';
+  else task.checklist[index].status = '⌛️';
+  
+  saveData();
+  renderChecklistUI();
+}
+
+function removeChecklist(index) {
+  const task = state.tasks.find(t => t.id === state.activeTaskId);
+  task.checklist.splice(index, 1);
+  saveData();
+  renderChecklistUI();
+}
+
+function renderChecklistUI() {
+  const task = state.tasks.find(t => t.id === state.activeTaskId);
+  const container = document.getElementById('checklist_container');
+  container.innerHTML = '';
+  
+  if(!task || !task.checklist) return;
+  
+  task.checklist.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'ch-item';
+    div.innerHTML = `
+      <div class="ch-text">${idx+1}. ${item.text}</div>
+      <button class="ch-toggle" onclick="toggleStatus(${idx})">${item.status}</button>
+      <button class="ch-del" onclick="removeChecklist(${idx})">×</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// --- UTILS & FORMATTERS ---
 function g(id) { return document.getElementById(id).value.trim(); }
 function fmtDate(d) {
   if (!d) return '-';
   const [y,m,day] = d.split('-');
-  return `${day}-${m}-${y}`;
+  return `${day}-${m}-${y}`; // DD-MM-YYYY
 }
-function fmtTime(t) { return t ? t.replace(':','.') : '-'; }
-
-function getStatusStr(s) {
-  return { success:'Success ✅', progress:'On Progress 🔄', back:'Back to Dev 🔁', fail:'Failed ❌' }[s] || 'Success ✅';
-}
-function getJiraStatus(s) {
-  return { success:'Done ✅', progress:'On Progress 🔄', back:'Back to Dev 🔁', fail:'Failed ❌' }[s] || 'Done ✅';
+function fmtDateIDM(d) {
+  if (!d) return '-';
+  const dateObj = new Date(d);
+  return dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }); // 08 Mei
 }
 function lines(text) { return text ? text.split('\n').map(l=>l.trim()).filter(Boolean) : []; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
 
-function generate() {
-  const d = {
-    app:        g('app_name'),
-    project:    g('project_name'),
-    jira:       g('jira_link'),
-    ticket:     g('ticket_no'),
-    cat:        g('category'),
-    type:       g('type'),
-    crit:       g('criticality'),
-    bg:         g('background'),
-    purpose:    g('purpose'),
-    outcome:    g('outcome'),
-    testStart:  fmtDate(g('test_start')),
-    deployDate: fmtDate(g('deploy_date')),
-    startTime:  fmtTime(g('start_time')),
-    endTime:    fmtTime(g('end_time')),
-    sitHappy:   g('sit_happy')   || '0',
-    sitUnhappy: g('sit_unhappy') || '0',
-    sitDefect:  g('sit_defect')  || '0',
-    uatHappy:   g('uat_happy')   || '0',
-    uatUnhappy: g('uat_unhappy') || '0',
-    uatDefect:  g('uat_defect')  || '0',
-    notes:      g('notes'),
-    status:     deployStatus
-  };
+// --- GENERATOR ENGINE ---
+function generateReport() {
+  saveActiveTaskData();
+  const task = state.tasks.find(t => t.id === state.activeTaskId);
+  const d = task.data;
+  
+  // Waktu saat generate
+  const now = new Date();
+  const tsYMD = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  const tsTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+  const currTimestamp = `${tsYMD} ${tsTime}`;
 
-  const prepLines    = lines(g('data_prep'));
-  const happyLines   = lines(g('happy_activities'));
-  const unhappyLines = lines(g('unhappy_activities'));
-  const defectLines  = lines(g('defect_notes'));
+  // Formatting Date Time
+  const deployStartFmt = (d.deploy_date && d.start_time) ? `${d.deploy_date} ${d.start_time}` : '-';
+  const deployEndFmt = (d.deploy_date && d.end_time) ? `${d.deploy_date} ${d.end_time}` : '-';
+  const lastUpdateDeploy = (d.deploy_date && d.end_time) ? `${fmtDate(d.deploy_date)}, ${d.end_time.replace(':','.')}` : '-';
 
-  // TC count: pakai jumlah baris aktivitas jika diisi, fallback ke angka manual
-  const sitHappyCount   = happyLines.length   > 0 ? happyLines.length   : parseInt(d.sitHappy)   || 0;
-  const sitUnhappyCount = unhappyLines.length > 0 ? unhappyLines.length : parseInt(d.sitUnhappy) || 0;
-  const sitDefectCount  = defectLines.length  > 0 ? defectLines.length  : parseInt(d.sitDefect)  || 0;
-  const totalSitTC      = sitHappyCount + sitUnhappyCount;
+  // Format Checklist & List TC
+  const chBlock = task.checklist.length > 0 
+    ? task.checklist.map(i => `- ${i.text} ${i.status}`).join('\n') 
+    : '-';
+  const chBlockPlain = task.checklist.length > 0 
+    ? task.checklist.map(i => `- ${i.text}`).join('\n') 
+    : '-';
 
-  const lastUpdate = d.deployDate !== '-'
-    ? `${d.deployDate}, ${d.endTime !== '-' ? d.endTime : '-'}` : '-';
+  const irisLinkFmt = d.iris_link ? `[IRIS|${d.iris_link}]` : '-';
 
-  // strip trailing ✅ atau ⏳ dari input user supaya tidak double
-  function stripMark(s) { return s.replace(/[\u2705\u23F3\s]+$/g, '').trimEnd(); }
+  // ── REPORT 1: DEPLOY TEST REPORT ──
+  generatedReports[0] = 
+`*DEPLOYMENT TEST REPORT*
+*IT Application Support Group*
 
-  // ── blocks ──
-  // deploy test: tampilkan apa adanya dari user (tidak tambah ✅ lagi)
-  const happyDeploy   = happyLines.length   > 0 ? happyLines.map(a   => ` # ${a}`).join('\n') : ' # -';
-  const unhappyDeploy = unhappyLines.length > 0 ? unhappyLines.map(a => ` # ${a}`).join('\n') : sitUnhappyCount;
-  const prepBlock     = prepLines.length    > 0 ? prepLines.map(a    => `> ${a}`).join('\n')  : '> -';
+*Deployment Test ${d.app_name || '-'}*
+Jira Deployment Test URL = ${d.jira_link || '-'}
+Jira Deployment Test Status = ${d.deploy_status}
+Jira Deployment Test Last Update = ${lastUpdateDeploy}
+Fungsi QA = ${d.fungsi_qa || '-'}
 
-  // aktivitas testing: tampilkan apa adanya (user sudah kasih ✅/⏳ sendiri)
-  const happyListBlock   = happyLines.length   > 0 ? happyLines.map((a,i)   => `> ${i+1}. ${a}`).join('\n') : '> -';
-  const unhappyListBlock = unhappyLines.length > 0 ? unhappyLines.map((a,i) => `> ${i+1}. ${a}`).join('\n') : '> -';
+*DEPLOYMENT TEST REPORT*
 
-  // readiness activity block
-  const happyActBlock   = happyLines.length > 0
-    ? happyLines.map((a,i) => `Activity Testing (${i+1}):\n${a}`).join('\n\n')
-    : 'Activity Testing (1):\n-';
-  const unhappyActBlock = unhappyLines.length > 0
-    ? '\n\n' + unhappyLines.map((a,i) => `Activity Testing Unhappy (${i+1}):\n${a}`).join('\n\n')
-    : '';
-  const activityBlock = happyActBlock + unhappyActBlock;
+IT Application Support Group
 
-  // ── REPORT 1: DEPLOY TEST ──
-  reports[0] =
-`*Deployment Test - ${d.app} - ${d.project} *
-Jira Deployment Test URL = ${d.jira || '-'}
-Jira Deployment Test Status = ${getJiraStatus(d.status)}
-Jira Deployment Test Last Update = ${lastUpdate}
+ 
 
-Project Name  : ${d.app} - ${d.project}
+Project Name  : ${d.project_name || '-'}
 
-No Ticket iRIS : ${d.ticket || '-'}
+ 
 
-Application/Subject : ${d.app || '-'}
-Start Time : ${d.deployDate} ${d.startTime}
-End Time : ${d.deployDate} ${d.endTime}
-Category : ${d.cat}
-Type     : ${d.type}
+No Ticket iRIS : ${d.ticket_no || '-'}
 
-Application/Subject Criticality : ${d.crit}
+Link iRIS :  ${irisLinkFmt}
+
+ 
+
+Application/Subject :  ${d.app_name || '-'}
+
+Start Time : ${deployStartFmt}
+
+End Time : ${deployEndFmt}
+
+Category : ${d.category || '-'}
+
+Type     : ${d.type || '-'}
+
+ 
+
+Application/Subject Criticality : ${d.criticality}
+
+ 
 
 Report Post Live Monitoring :          
 
-Happy Flow
-${happyDeploy}
+ 
 
-Unhappy Flow : ${unhappyDeploy}
+Happy Flow: ${task.checklist.length || d.tc_happy}
 
-Notes :
-${d.notes || '-'}
+${chBlock}
 
-PIC         
-Dev   : ${g('pic_dev') || '-'}
-QA    : ${g('pic_qa')  || '-'}
-Ops  :  ${g('pic_ops') || '-'}
-PO : ${g('pic_po')     || '-'}
+ 
 
-Deploy Status: ${getStatusStr(d.status)} 
+Unhappy Flow : ${d.tc_unhappy || '0'}
 
-Terima kasih 🙏🏼`;
+ 
 
-  // ── REPORT 2: AKTIVITAS TESTING ──
-  reports[1] =
+Notes : ${d.notes || '-'}
+
+ 
+
+PIC    
+
+Dev   : ${d.pic_dev || '-'}
+
+QA    : ${d.pic_tester || '-'}
+
+Ops  :  ${d.pic_ops || '-'}
+
+PO : ${d.pic_po || '-'}
+
+ 
+
+Deploy Status: ${d.deploy_status} 
+
+ 
+
+Terima kasih 🙏🏼
+
+_Generated by Aura BOT at ${currTimestamp}_
+_QIM Deputy - IT Application Support Group_`;
+
+  // ── REPORT 2: UPDATE AKTIVITAS TESTING ──
+  const prepLines = lines(d.data_prep).map(l => l.startsWith('>') ? l : `> ${l}`).join('\n');
+  
+  generatedReports[1] =
 `*Update Report Aktivitas Testing*
-Nama Aplikasi: ${d.app}
-Nama Project : ${d.project}
-Link Jira project : ${d.jira || '-'}
-Metode pengembangan: ${d.cat}
+Nama Aplikasi: ${d.app_name || '-'}
+Nama Project : ${d.project_name || '-'}
+Link Jira project : ${d.jira_link || '-'}
+Metode pengembangan: ${d.category || '-'}
 
 *Scope pengembangan :*
 1.Latar Belakang:
-${d.bg || '-'}
+${d.background || '-'}
 
 2.Tujuan Perubahan : ${d.purpose || '-'}
 
 3.Outcome:
 ${d.outcome || '-'}
 
-4.Rencana Deployment: ${d.deployDate}
-5.Mulai aktivitas pengujian: ${d.testStart}
-\t
+4.Rencana Deployment: ${fmtDate(d.deploy_date)}
+5.Mulai aktivitas pengujian: ${fmtDate(d.sit_date)}
+	
 *Progres Testing:*
 *Ready to Deploy*
 1. Data Preparation:
-${prepBlock}
+${prepLines || '> -'}
 
- 
-2. SIT: jumlah TC ${totalSitTC} ✅
-> Happy: ${sitHappyCount} ✅
-> Unhappy: ${sitUnhappyCount}
-> Defect: ${sitDefectCount}
+2. SIT: jumlah ${d.tc_total} TC ✅
+> Happy: ${d.tc_happy} ✅
+> Unhappy: ${d.tc_unhappy} ✅
+> Defect: ${d.tc_defect}
 
-Happy Flow :
-${happyListBlock}
+3. UAT: ${d.tc_total} ✅
+> Happy: ${d.tc_happy} ✅
+> Unhappy: ${d.tc_unhappy} ✅
+> Defect: ${d.tc_defect}
 
-Unhappy Flow :
-${unhappyListBlock}
-
-Defect :
-${defectLines.length > 0 ? defectLines.map((a,i) => `> ${i+1}. ${a}`).join('\n') : '> -'}
-
-3. UAT: jumlah TC
-> Happy: ${d.uatHappy}
-> Unhappy: ${d.uatUnhappy}
-> Defect: ${d.uatDefect}
-
-4. Note: 
->  ${d.notes || ''}
-
+4. Note: UAT ${fmtDateIDM(d.uat_date)} ✅
 
 PIC :
-PIC PO / User : ${g('pic_dev') || '-'}
-Test Lead : ${g('pic_tl')      || '-'}
-Tester : ${g('pic_tester')     || '-'}`;
+PIC PO / User : ${d.pic_po || '-'}
+Test Lead : ${d.pic_tl || '-'}
+Tester : ${d.pic_tester || '-'}`;
 
-  // ── REPORT 3: READINESS ──
-  reports[2] =
+  // ── REPORT 3: READINESS REPORT ──
+  const deployTimeStrH = d.start_time ? d.start_time.split(':')[0] + ':' + d.start_time.split(':')[1] : '-';
+  const deployTimeEndH = d.end_time ? d.end_time.split(':')[0] + ':' + d.end_time.split(':')[1] : '-';
+  
+  generatedReports[2] =
 `Deployment Readiness Report
-Nama Aplikasi : ${d.app}
-Nama Project : ${d.project}
-Link Jira project : ${d.jira || '-'}
+Nama Aplikasi: ${d.app_name || '-'}
+Nama Project : ${d.project_name || '-'}
+Link Jira project : ${d.jira_link || '-'}
+Metode pengembangan: ${d.category || '-'}
 
-Scope pengembangan : 
-Latar Belakang:
-${d.bg || '-'}
+Scope pengembangan :
+1.Latar Belakang:
+${d.background || '-'}
 
-Tujuan Perubahan : 
-${d.purpose || '-'}
+2.Tujuan Perubahan : ${d.purpose || '-'}
 
-Outcome:
-
+3.Outcome:
 ${d.outcome || '-'}
 
-Deployment surrounding apps : -
-Surrounding apps terdampak : -
+Summary Pengujian
+Tanggal SIT : ${fmtDateIDM(d.sit_date)} 
+Tanggal UAT : ${fmtDateIDM(d.uat_date)}
+Jumlah TC SIT/UAT : ${d.tc_total} TC
+ 
+● happy flow :  ${d.tc_happy} TC 
 
-Summary Pengujian 
-Tanggal Pembuatan SOP Verification : ${d.testStart}
-Jumlah TC SIT/UAT :${totalSitTC} TC 
-happy flow :${sitHappyCount} TC 
+${d.tc_details || '-'}
 
-unhappy flow :${sitUnhappyCount} TC 
+● unhappy flow : ${d.tc_unhappy} TC
+-
 
-${activityBlock}
+● Jumlah defect pengujian : ${d.tc_defect}
 
-Jumlah defect pengujian : ${sitDefectCount}${defectLines.length > 0 ? '\n' + defectLines.map((a,i) => `Defect (${i+1}): ${a}`).join('\n') : ''}
+-------------------------------------------------------------------------------------------
+Strategi Deployment
+No Tiket NCM : ${d.ticket_no || '-'}
+Strategi deploy : ${d.type || '-'}
+* Start: ${fmtDateIDM(d.deploy_date)} ${d.deploy_date ? new Date(d.deploy_date).getFullYear() : ''} pukul ${deployTimeStrH} WIB
+* End: ${fmtDateIDM(d.deploy_date)} ${d.deploy_date ? new Date(d.deploy_date).getFullYear() : ''} pukul ${deployTimeEndH} WIB
 
-${'--'.repeat(55)}
+Plan Deployment Test	
+Jumlah TC 
+Happy Flow : ${task.checklist.length || d.tc_happy}
+${chBlockPlain}
 
-Strategi Deployment 
-No Tiket NCM : ${d.ticket || '-'}
-Strategi deploy : ${d.type}
-* Start: ${d.deployDate} pukul ${d.startTime} WIB
-* End: ${d.deployDate} pukul ${d.endTime} WIB
-
-Notes: ${d.notes || '-'}
-
-Plan Deployment Test 
-Jumlah TC Happy Flow : ${sitHappyCount}
-${happyLines.length > 0 ? happyLines.map(a => `- ${a}`).join('\n') : '-'}
-
-Jumlah TC Unhappy Flow : ${sitUnhappyCount}
-${unhappyLines.length > 0 ? unhappyLines.map(a => `- ${a}`).join('\n') : '-'}
+Jumlah TC Unhappy Flow : ${d.tc_unhappy || '0'}
 
 Jumlah TC 
-Regresi : -
+Regresi : ${d.tc_regresi || '-'}
 
-PIC PO / User: ${g('pic_po')     || '-'}
-Test Lead: ${g('pic_tl')         || '-'}
-Tester: ${g('pic_tester')        || '-'}`;
+PIC :
+PIC PO / User : ${d.pic_po || '-'}
+Test Lead : ${d.pic_tl || '-'}
+Tester : ${d.pic_tester || '-'}`;
 
-  const rb = document.getElementById('result-box');
-  rb.style.display = 'block';
+  document.getElementById('result-box').style.display = 'block';
   showTab(0);
-  setTimeout(() => rb.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
-  showToast('3 report berhasil dibuat! ✨');
-  saveCache();
+  document.getElementById('result-box').scrollIntoView({ behavior:'smooth', block:'start' });
+  showToast('Laporan berhasil di-generate! ✨');
 }
 
-const tabLabels = ['Deploy Test Report','Update Report Aktivitas Testing','Deployment Readiness Report'];
+// --- TAB NAVIGATION ---
+const tabLabels = ['Deploy Test Report', 'Update Report Aktivitas Testing', 'Deployment Readiness Report'];
 
 function showTab(i) {
   currentTab = i;
   document.querySelectorAll('.t-btn').forEach((b,idx) => b.className = 't-btn'+(idx===i?' active':''));
-  document.getElementById('report-content').textContent = reports[i];
-  document.getElementById('out-label').textContent = tabLabels[i];
+  document.getElementById('report-content').textContent = generatedReports[i];
   const cb = document.getElementById('copy-btn');
-  cb.textContent = 'Salin'; cb.className = 'copy-btn';
+  cb.textContent = 'Salin Text'; cb.style.background = 'var(--purple-b)'; cb.style.color = 'var(--accent)';
 }
 
 function copyReport() {
-  navigator.clipboard.writeText(reports[currentTab]).then(() => {
+  navigator.clipboard.writeText(generatedReports[currentTab]).then(() => {
     const btn = document.getElementById('copy-btn');
-    btn.textContent = 'Tersalin!'; btn.className = 'copy-btn copied';
-    setTimeout(() => { btn.textContent = 'Salin'; btn.className = 'copy-btn'; }, 2000);
+    btn.textContent = '✓ Tersalin!'; btn.style.background = 'var(--success-b)'; btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = 'Salin Text'; btn.style.background = 'var(--purple-b)'; btn.style.color = 'var(--accent)'; }, 2000);
   });
 }
 
-setupAutoSave();
-loadCache();
+// Start Engine
+init();
 </script>
 </body>
 </html>
