@@ -68,12 +68,14 @@
     .field { margin-bottom: 1rem; } .field:last-child { margin-bottom: 0; }
     .field label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text2); margin-bottom: 6px; font-weight: 600; }
     .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    .badge-uat { background: var(--warn-b); color: var(--warn); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;}
     
     input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea { width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--r); padding: 10px 12px; font-size: 13.5px; color: var(--text); font-family: var(--font); transition: all .2s; outline: none; }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px var(--accent-g); }
     textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     
     .readonly-input { background: var(--bg2) !important; border-color: transparent !important; font-weight: 700; color: var(--accent) !important; cursor: not-allowed; text-align: center;}
+    .editable-count { font-weight: 700; text-align: center; border-color: var(--border2) !important; background: #fff !important; }
     
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
@@ -181,16 +183,52 @@
       </div>
     </div>
 
-    <div class="step-label" data-n="04">Test Case (SIT & UAT)</div>
+    <div class="step-label" data-n="04">Status Fase Testing (Untuk Laporan Aktivitas)</div>
     <div class="card">
+      <div class="row2">
+        <div class="field">
+          <label>Status SIT</label>
+          <select id="sit_status">
+            <option value="Belum Dimulai ⏳">Belum Dimulai ⏳</option>
+            <option value="In Progress 🔄">In Progress 🔄</option>
+            <option value="Done ✅" selected>Done ✅</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status UAT</label>
+          <select id="uat_status">
+            <option value="Belum Dimulai ⏳" selected>Belum Dimulai ⏳</option>
+            <option value="In Progress 🔄">In Progress 🔄</option>
+            <option value="Done ✅">Done ✅</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-label" data-n="05">Test Case (SIT & UAT)</div>
+    <div class="card">
+      
+      <div class="field"><label style="color:var(--accent);">SIT Count (Otomatis dari List Bawah)</label></div>
       <div class="row3" style="margin-bottom: 1.5rem;">
-        <div class="field"><label>Total TC SIT/UAT</label><input type="text" id="tc_total" value="0" readonly class="readonly-input" /></div>
-        <div class="field"><label>Happy Flow Count</label><input type="text" id="tc_happy" value="0" readonly class="readonly-input" /></div>
-        <div class="field"><label>Unhappy Flow Count</label><input type="text" id="tc_unhappy" value="0" readonly class="readonly-input" /></div>
+        <div class="field"><label>Total TC SIT</label><input type="text" id="tc_total" value="0" readonly class="readonly-input" /></div>
+        <div class="field"><label>Happy Flow</label><input type="text" id="tc_happy" value="0" readonly class="readonly-input" /></div>
+        <div class="field"><label>Unhappy Flow</label><input type="text" id="tc_unhappy" value="0" readonly class="readonly-input" /></div>
       </div>
       <div class="row2" style="margin-top:-10px; margin-bottom:1.5rem;">
-        <div class="field"><label>Defect Count</label><input type="text" id="tc_defect" value="0" readonly class="readonly-input" /></div>
-        <div class="field"><label>TC Regresi Count</label><input type="text" id="tc_regresi" value="0" readonly class="readonly-input" /></div>
+        <div class="field"><label>Defect</label><input type="text" id="tc_defect" value="0" readonly class="readonly-input" /></div>
+        <div class="field"><label>TC Regresi</label><input type="text" id="tc_regresi" value="0" readonly class="readonly-input" /></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field"><label style="color:var(--warn);">UAT Count <span class="badge-uat">Bisa Diedit Manual</span></label></div>
+      <div class="row3" style="margin-bottom: 1.5rem;">
+        <div class="field"><label>Total TC UAT</label><input type="number" id="uat_tc_total" value="0" class="editable-count" /></div>
+        <div class="field"><label>Happy Flow UAT</label><input type="number" id="uat_tc_happy" value="0" class="editable-count" /></div>
+        <div class="field"><label>Unhappy Flow UAT</label><input type="number" id="uat_tc_unhappy" value="0" class="editable-count" /></div>
+      </div>
+      <div class="row3" style="margin-top:-10px; margin-bottom:1.5rem;">
+        <div class="field"><label>Defect UAT</label><input type="number" id="uat_tc_defect" value="0" class="editable-count" /></div>
       </div>
 
       <div class="field" style="border-top: 1.5px solid var(--border); padding-top: 15px;">
@@ -203,7 +241,7 @@
       </div>
 
       <div class="field" style="margin-top: 15px;">
-        <label><span class="dot"></span>List Detail TC Happy Flow</label>
+        <label><span class="dot"></span>List Detail TC Happy Flow (SIT)</label>
         <div class="ch-builder">
           <input type="text" id="inp_tc_happy" placeholder="Ex: [MFA][Joiner] Fetch New User" onkeypress="if(event.key==='Enter') addToList('tc_happy', 'inp_tc_happy')" />
           <button class="ch-add-btn" onclick="addToList('tc_happy', 'inp_tc_happy')">+</button>
@@ -212,7 +250,7 @@
       </div>
 
       <div class="field" style="margin-top: 15px;">
-        <label><span class="dot"></span>List Detail TC Unhappy Flow</label>
+        <label><span class="dot"></span>List Detail TC Unhappy Flow (SIT)</label>
         <div class="ch-builder">
           <input type="text" id="inp_tc_unhappy" placeholder="Ex: [MFA][Joiner] Fetch Duplicate User Returns Error" onkeypress="if(event.key==='Enter') addToList('tc_unhappy', 'inp_tc_unhappy')" />
           <button class="ch-add-btn" onclick="addToList('tc_unhappy', 'inp_tc_unhappy')">+</button>
@@ -240,7 +278,7 @@
       </div>
     </div>
     
-    <div class="step-label" data-n="05">Checklist Deployment Test</div>
+    <div class="step-label" data-n="06">Checklist Deployment Test</div>
     <div class="card">
       <div class="field">
         <label><span class="dot"></span>Happy Flow Deployment Test</label>
@@ -261,7 +299,7 @@
       </div>
     </div>
 
-    <div class="step-label" data-n="06">PIC & Status Deploy</div>
+    <div class="step-label" data-n="07">PIC & Status Deploy</div>
     <div class="card">
       <div class="row2">
         <div class="field"><label>Fungsi QA</label><input type="text" id="fungsi_qa" value="QA_QFN" /></div>
@@ -339,20 +377,20 @@
 
 <script>
 // --- STATE MANAGEMENT ---
-const STORE_KEY = 'qa_workspace_v4';
+const STORE_KEY = 'qa_workspace_v5';
 let state = { activeTaskId: null, tasks: [] };
 
-// Field dasar HTML string value
+// Binding Fields (sekarang ditambah status & UAT counts)
 const BIND_FIELDS = [
   'app_name','project_name','jira_link','iris_link','ticket_no','category','type','criticality',
   'background','purpose','outcome','sit_date','uat_date','deploy_date','start_time','end_time',
+  'sit_status','uat_status', 'uat_tc_total', 'uat_tc_happy', 'uat_tc_unhappy', 'uat_tc_defect',
   'fungsi_qa','pic_tl','pic_tester','pic_po','pic_dev','pic_ops','deploy_status','notes'
 ];
 
 let generatedReports = ['','',''];
 let currentTab = 0;
 
-// --- INITIALIZATION ---
 function init() {
   loadData();
   if (state.tasks.length === 0) createNewTask();
@@ -362,18 +400,11 @@ function init() {
     loadTaskToForm(state.activeTaskId);
   }
 
-  // Setup Autosave Listeners (Input & Change)
   BIND_FIELDS.forEach(id => {
     const el = document.getElementById(id);
     if(el) {
-      el.addEventListener('input', () => {
-        saveActiveTaskData();
-        renderSidebar();
-      });
-      el.addEventListener('change', () => {
-        saveActiveTaskData();
-        renderSidebar();
-      });
+      el.addEventListener('input', () => { saveActiveTaskData(); renderSidebar(); });
+      el.addEventListener('change', () => { saveActiveTaskData(); renderSidebar(); });
     }
   });
 }
@@ -386,7 +417,6 @@ function loadData() {
   } catch(e) { console.error("Cache error", e); }
 }
 
-// --- TASK MANAGEMENT (SIDEBAR) ---
 function createNewTask() {
   const newId = 'task_' + Date.now();
   const newTask = {
@@ -467,21 +497,17 @@ function loadTaskToForm(taskId) {
     if(el && task.data[id] !== undefined) el.value = task.data[id];
   });
   
-  // Data Migration Support for old cache
   if(!task.lists) task.lists = { data_prep:[], tc_happy:[], tc_unhappy:[], tc_defect:[], tc_regresi:[], deploy_happy:[], deploy_unhappy:[] };
   
   renderAllLists();
 }
 
-// --- DYNAMIC LIST ENGINE ---
 function addToList(listName, inputId) {
   const input = document.getElementById(inputId);
   const text = input.value.trim();
   if(!text) return;
   
   const task = state.tasks.find(t => t.id === state.activeTaskId);
-  
-  // For deploy lists, we need status. For others, just text.
   if(listName.startsWith('deploy_')) {
     task.lists[listName].push({ text: text, status: '⌛️' });
   } else {
@@ -540,7 +566,6 @@ function renderList(listName) {
   });
 }
 
-// Auto update Input Number Counts based on List length
 function updateCountsUI() {
   const task = state.tasks.find(t => t.id === state.activeTaskId);
   if(!task || !task.lists) return;
@@ -556,9 +581,14 @@ function updateCountsUI() {
   document.getElementById('tc_unhappy').value = cUnhappy;
   document.getElementById('tc_defect').value = cDefect;
   document.getElementById('tc_regresi').value = cRegresi;
+
+  // Auto-sync ke UAT jika nilai UAT sebelumnya masih sama atau 0 (smart sync)
+  document.getElementById('uat_tc_total').value = cTotal;
+  document.getElementById('uat_tc_happy').value = cHappy;
+  document.getElementById('uat_tc_unhappy').value = cUnhappy;
+  document.getElementById('uat_tc_defect').value = cDefect;
 }
 
-// --- UTILS & FORMATTERS ---
 function fmtDate(d) {
   if (!d) return '-';
   const [y,m,day] = d.split('-');
@@ -582,12 +612,13 @@ function generateReport() {
   const d = task.data;
   const lst = task.lists;
   
+  // Basic formats
   const deployStartFmt = (d.deploy_date && d.start_time) ? `${d.deploy_date} ${d.start_time}` : '-';
   const deployEndFmt = (d.deploy_date && d.end_time) ? `${d.deploy_date} ${d.end_time}` : '-';
   const lastUpdateDeploy = (d.deploy_date && d.end_time) ? `${fmtDate(d.deploy_date)}, ${d.end_time.replace(':','.')}` : '-';
   const irisLinkFmt = d.iris_link ? `[IRIS|${d.iris_link}]` : '-';
 
-  // Counts Calculation
+  // TC Counts (SIT / Default)
   const tcHappyCount = lst.tc_happy.length;
   const tcUnhappyCount = lst.tc_unhappy.length;
   const tcTotalCount = tcHappyCount + tcUnhappyCount;
@@ -597,7 +628,6 @@ function generateReport() {
   const depHappyCount = lst.deploy_happy.length;
   const depUnhappyCount = lst.deploy_unhappy.length;
 
-  // Blocks Building
   const prepBlock = lst.data_prep.length > 0 ? lst.data_prep.map(i => `> ${i.text}`).join('\n') : '> -';
   const tcHappyBlock = lst.tc_happy.length > 0 ? lst.tc_happy.map((i, idx) => `${idx+1}. ${i.text}`).join('\n') : '-';
   const tcUnhappyBlock = lst.tc_unhappy.length > 0 ? lst.tc_unhappy.map((i, idx) => `${idx+1}. ${i.text}`).join('\n') : '-';
@@ -609,6 +639,26 @@ function generateReport() {
   const depUnhappyStatusBlock = lst.deploy_unhappy.length > 0 ? lst.deploy_unhappy.map(i => `- ${i.text} ${i.status}`).join('\n') : '-';
 
   const uatNoteLine = fmtDateIDM(d.uat_date) !== '-' ? `UAT ${fmtDateIDM(d.uat_date)}` : '';
+
+  // LOGIC AKTIVITAS TESTING (SIT)
+  let sitSection = '';
+  if (d.sit_status === 'Belum Dimulai ⏳') {
+    sitSection = `2. SIT: Belum dimulai ⏳`;
+  } else if (d.sit_status === 'In Progress 🔄') {
+    sitSection = `2. SIT: jumlah ${tcTotalCount} TC 🔄\n> Happy: ${tcHappyCount} 🔄\n> Unhappy: ${tcUnhappyCount} 🔄\n> Defect: ${tcDefectCount}`;
+  } else {
+    sitSection = `2. SIT: jumlah ${tcTotalCount} TC ✅\n> Happy: ${tcHappyCount} ✅\n> Unhappy: ${tcUnhappyCount} ✅\n> Defect: ${tcDefectCount}`;
+  }
+
+  // LOGIC AKTIVITAS TESTING (UAT)
+  let uatSection = '';
+  if (d.uat_status === 'Belum Dimulai ⏳') {
+    uatSection = `3. UAT: Belum dimulai ⏳`;
+  } else if (d.uat_status === 'In Progress 🔄') {
+    uatSection = `3. UAT: ${d.uat_tc_total} TC 🔄\n> Happy: ${d.uat_tc_happy} 🔄\n> Unhappy: ${d.uat_tc_unhappy} 🔄\n> Defect: ${d.uat_tc_defect}`;
+  } else {
+    uatSection = `3. UAT: ${d.uat_tc_total} TC ✅\n> Happy: ${d.uat_tc_happy} ✅\n> Unhappy: ${d.uat_tc_unhappy} ✅\n> Defect: ${d.uat_tc_defect}`;
+  }
 
   // ── REPORT 0: UPDATE AKTIVITAS TESTING ──
   generatedReports[0] =
@@ -635,15 +685,9 @@ ${d.outcome || '-'}
 1. Data Preparation:
 ${prepBlock}
 
-2. SIT: jumlah ${tcTotalCount} TC ✅
-> Happy: ${tcHappyCount} ✅
-> Unhappy: ${tcUnhappyCount} ✅
-> Defect: ${tcDefectCount}
+${sitSection}
 
-3. UAT: ${tcTotalCount} ✅
-> Happy: ${tcHappyCount} ✅
-> Unhappy: ${tcUnhappyCount} ✅
-> Defect: ${tcDefectCount}
+${uatSection}
 
 4. Note: ${uatNoteLine}
 
@@ -814,10 +858,7 @@ function copyReport() {
   });
 }
 
-// Start Engine
 init();
 </script>
 </body>
 </html>
-
-```
