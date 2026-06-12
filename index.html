@@ -1,668 +1,1123 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QA Report Generator Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,600;1,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,600;1,9..40,700&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg:       #f0f4ff;
-      --bg2:      #e6ecff;
-      --card:     #ffffff;
-      --card2:    #f7f9ff;
-      --border:   #d4dcf7;
-      --border2:  #b0bef0;
-      --text:     #1a1d36;
-      --text2:    #4a517a;
-      --text3:    #8b92b8;
-      --accent:   #4f46e5;
-      --accent-g: rgba(79,70,229,.15);
-      --success:  #059669; --success-b:#d1fae5;
-      --warn:     #d97706; --warn-b:  #fef3c7;
-      --danger:   #dc2626; --danger-b: #fee2e2;
-      --info:     #0284c7; --info-b:  #e0f2fe;
+      --bg: #f0f4ff;
+      --bg2: #e6ecff;
+      --card: #ffffff;
+      --card2: #f7f9ff;
+      --border: #d4dcf7;
+      --border2: #b0bef0;
+      --text: #1a1d36;
+      --text2: #4a517a;
+      --text3: #8b92b8;
+      --accent: #4f46e5;
+      --accent-g: rgba(79, 70, 229, .15);
+      --success: #059669;
+      --success-b: #d1fae5;
+      --warn: #d97706;
+      --warn-b: #fef3c7;
+      --danger: #dc2626;
+      --danger-b: #fee2e2;
+      --info: #0284c7;
+      --info-b: #e0f2fe;
       --purple-b: #ede9fe;
-      --font:     'DM Sans', sans-serif;
-      --mono:     'DM Mono', monospace;
-      --r:        8px; --r2: 12px;
-      --shadow:   0 1px 3px rgba(79,70,229,.08), 0 4px 16px rgba(79,70,229,.06);
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+      --r: 8px;
+      --r2: 12px;
+      --shadow: 0 1px 3px rgba(79, 70, 229, .08), 0 4px 16px rgba(79, 70, 229, .06);
     }
 
-    body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
 
     /* LAYOUT: SIDEBAR & MAIN */
-    .sidebar { width: 280px; background: var(--card); border-right: 1.5px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
-    .sidebar-header { padding: 1.25rem; border-bottom: 1.5px solid var(--border); }
-    .sidebar-header h2 { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
-    .sidebar-header h2::before { content:''; width:8px; height:8px; background:var(--accent); border-radius:50%; }
-    
-    .new-task-btn { width: 100%; margin-top: 1rem; padding: 10px; font-size: 13px; font-weight: 600; background: var(--purple-b); color: var(--accent); border: 1.5px dashed var(--accent); border-radius: var(--r); cursor: pointer; transition: all .2s; font-family: var(--font); }
-    .new-task-btn:hover { background: var(--accent); color: #fff; }
+    .sidebar {
+      width: 280px;
+      background: var(--card);
+      border-right: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
 
-    .task-list { flex: 1; overflow-y: auto; padding: 1rem; }
-    .task-item { padding: 12px; border-radius: var(--r); margin-bottom: 8px; cursor: pointer; border: 1.5px solid transparent; background: var(--card2); transition: all .2s; position: relative; }
-    .task-item:hover { border-color: var(--border2); }
-    .task-item.active { background: #fff; border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-g); }
-    .task-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 20px;}
-    .task-date { font-size: 11px; color: var(--text3); }
-    
-    .delete-task { position: absolute; right: 10px; top: 12px; color: var(--text3); font-size: 14px; cursor: pointer; opacity: 0; transition: opacity .2s; border: none; background: transparent;}
-    .task-item:hover .delete-task { opacity: 1; }
-    .delete-task:hover { color: var(--danger); }
+    .sidebar-header {
+      padding: 1.25rem;
+      border-bottom: 1.5px solid var(--border);
+    }
 
-    .main-content { flex: 1; overflow-y: auto; position: relative; padding: 2rem; scroll-behavior: smooth; }
-    .main-content::before { content: ''; position: fixed; inset: 0; left: 280px; background-image: linear-gradient(rgba(79,70,229,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(79,70,229,.035) 1px, transparent 1px); background-size: 36px 36px; pointer-events: none; z-index: 0; }
-    .container { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; padding-bottom: 4rem;}
+    .sidebar-header h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header h2::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .new-task-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--purple-b);
+      color: var(--accent);
+      border: 1.5px dashed var(--accent);
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+    }
+
+    .new-task-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .task-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .task-item {
+      padding: 12px;
+      border-radius: var(--r);
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      background: var(--card2);
+      transition: all .2s;
+      position: relative;
+    }
+
+    .task-item:hover {
+      border-color: var(--border2);
+    }
+
+    .task-item.active {
+      background: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px var(--accent-g);
+    }
+
+    .task-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 20px;
+    }
+
+    .task-date {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .delete-task {
+      position: absolute;
+      right: 10px;
+      top: 12px;
+      color: var(--text3);
+      font-size: 14px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity .2s;
+      border: none;
+      background: transparent;
+    }
+
+    .task-item:hover .delete-task {
+      opacity: 1;
+    }
+
+    .delete-task:hover {
+      color: var(--danger);
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+      padding: 2rem;
+      scroll-behavior: smooth;
+    }
+
+    .main-content::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      left: 280px;
+      background-image: linear-gradient(rgba(79, 70, 229, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 70, 229, .035) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      padding-bottom: 4rem;
+    }
 
     /* CARDS & FIELDS */
-    .step-label { font-size: 11px; font-weight: 700; letter-spacing:.08em; text-transform: uppercase; color: var(--text3); margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 8px; margin-top: 2rem;}
-    .step-label::before { content: attr(data-n); font-size: 9px; background: var(--accent); color: #fff; border-radius: 5px; padding: 2px 6px; }
-    .step-label:first-child { margin-top: 0; }
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: .75rem;
+      padding-bottom: .5rem;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2rem;
+    }
 
-    .card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--r2); padding: 1.5rem; box-shadow: var(--shadow); margin-bottom: 1rem;}
-    .field { margin-bottom: 1rem; } .field:last-child { margin-bottom: 0; }
-    .field label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text2); margin-bottom: 6px; font-weight: 600; }
-    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-    .badge-uat { background: var(--warn-b); color: var(--warn); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;}
-    
-    input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea { width: 100%; background: var(--card2); border: 1.5px solid var(--border); border-radius: var(--r); padding: 10px 12px; font-size: 13.5px; color: var(--text); font-family: var(--font); transition: all .2s; outline: none; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px var(--accent-g); }
-    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
-    
-    .readonly-input { background: var(--bg2) !important; border-color: transparent !important; font-weight: 700; color: var(--accent) !important; cursor: not-allowed; text-align: center;}
-    .editable-count { font-weight: 700; text-align: center; border-color: var(--border2) !important; background: #fff !important; }
-    
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .step-label::before {
+      content: attr(data-n);
+      font-size: 9px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 5px;
+      padding: 2px 6px;
+    }
+
+    .step-label:first-child {
+      margin-top: 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .badge-uat {
+      background: var(--warn-b);
+      color: var(--warn);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      color: var(--text);
+      font-family: var(--font);
+      transition: all .2s;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px var(--accent-g);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.6;
+    }
+
+    .readonly-input {
+      background: var(--bg2) !important;
+      border-color: transparent !important;
+      font-weight: 700;
+      color: var(--accent) !important;
+      cursor: not-allowed;
+      text-align: center;
+    }
+
+    .editable-count {
+      font-weight: 700;
+      text-align: center;
+      border-color: var(--border2) !important;
+      background: #fff !important;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .row3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
 
     /* CHECKLIST / LIST BUILDER UI */
-    .ch-builder { display: flex; gap: 8px; margin-bottom: 10px; }
-    .ch-add-btn { padding: 0 16px; background: var(--text); color: white; border: none; border-radius: var(--r); font-weight: 600; cursor: pointer; font-family: var(--font); font-size: 16px; }
-    .ch-list { display: flex; flex-direction: column; gap: 6px; }
-    .ch-item { display: flex; align-items: center; gap: 10px; background: var(--card2); padding: 8px 12px; border-radius: var(--r); border: 1.5px solid var(--border); }
-    .ch-text { flex: 1; font-size: 13.5px; }
-    .ch-toggle { padding: 4px 10px; font-size: 13px; border-radius: 6px; border: none; cursor: pointer; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: transform .1s; }
-    .ch-toggle:active { transform: scale(0.95); }
-    .ch-del { color: var(--text3); cursor: pointer; font-size: 16px; background: none; border: none; padding: 0 4px; }
-    .ch-del:hover { color: var(--danger); }
+    .ch-builder {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .ch-add-btn {
+      padding: 0 16px;
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: var(--r);
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 16px;
+    }
+
+    .ch-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ch-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card2);
+      padding: 8px 12px;
+      border-radius: var(--r);
+      border: 1.5px solid var(--border);
+    }
+
+    .ch-text {
+      flex: 1;
+      font-size: 13.5px;
+    }
+
+    .ch-toggle {
+      padding: 4px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+      transition: transform .1s;
+    }
+
+    .ch-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .ch-del {
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 16px;
+      background: none;
+      border: none;
+      padding: 0 4px;
+    }
+
+    .ch-del:hover {
+      color: var(--danger);
+    }
 
     /* BUTTONS */
-    .btn-row { display: flex; gap: 12px; margin-top: 2rem; }
-    .gen-btn { padding: 14px 24px; font-size: 14.5px; font-weight: 600; border-radius: var(--r2); cursor: pointer; background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%); border: none; color: #fff; box-shadow: 0 4px 16px rgba(79,70,229,.3); font-family: var(--font); flex: 1;}
-    .gen-btn:hover { opacity:.92; transform: translateY(-1px); }
-    
-    /* RESULT TABS */
-    .result-box { margin-top: 2rem; display: none; }
-    .tab-row { display: flex; gap: 8px; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 4px;}
-    .t-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 20px; cursor: pointer; border: 1.5px solid var(--border); background: var(--card); color: var(--text3); transition: all .2s; font-family: var(--font); white-space: nowrap;}
-    .t-btn:hover { color: var(--text2); border-color: var(--border2); }
-    .t-btn.active { border-color: var(--accent); color: var(--accent); background: var(--purple-b); }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 2rem;
+    }
 
-    .out-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--r2); padding: 1.5rem; position: relative; box-shadow: var(--shadow); }
-    .copy-btn { position: absolute; top: 1.25rem; right: 1.25rem; padding: 6px 14px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1.5px solid var(--accent); background: var(--purple-b); color: var(--accent); transition: all .15s; font-family: var(--font); }
-    .copy-btn:hover { background: var(--accent); color: #fff; }
-    .report-text { font-family: var(--mono); font-size: 12.5px; color: var(--text); white-space: pre-wrap; line-height: 1.7; padding-top: 2rem; }
+    .gen-btn {
+      padding: 14px 24px;
+      font-size: 14.5px;
+      font-weight: 600;
+      border-radius: var(--r2);
+      cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(79, 70, 229, .3);
+      font-family: var(--font);
+      flex: 1;
+    }
+
+    .gen-btn:hover {
+      opacity: .92;
+      transform: translateY(-1px);
+    }
+
+    /* RESULT TABS */
+    .result-box {
+      margin-top: 2rem;
+      display: none;
+    }
+
+    .tab-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .t-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      color: var(--text3);
+      transition: all .2s;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+
+    .t-btn:hover {
+      color: var(--text2);
+      border-color: var(--border2);
+    }
+
+    .t-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--purple-b);
+    }
+
+    .out-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.5rem;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1.5px solid var(--accent);
+      background: var(--purple-b);
+      color: var(--accent);
+      transition: all .15s;
+      font-family: var(--font);
+    }
+
+    .copy-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .report-text {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--text);
+      white-space: pre-wrap;
+      line-height: 1.7;
+      padding-top: 2rem;
+    }
 
     /* TOAST */
-    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; font-size: 13.5px; font-weight: 500; padding: 12px 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.15); opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; z-index: 999; }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    
-    .divider { height: 1.5px; background: var(--border); margin: 1.5rem 0; }
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--text);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .divider {
+      height: 1.5px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
   </style>
 </head>
+
 <body>
 
-<div class="sidebar">
-  <div class="sidebar-header">
-    <h2>QA Workspace</h2>
-    <button class="new-task-btn" onclick="createNewTask()">+ Buat Task Baru</button>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>QA Workspace</h2>
+      <button class="new-task-btn" onclick="createNewTask()">+ Buat Task Baru</button>
+    </div>
+    <div class="task-list" id="task-list-container"></div>
   </div>
-  <div class="task-list" id="task-list-container"></div>
-</div>
 
-<div class="main-content">
-  <div class="container">
-    
-    <div class="step-label" data-n="01">Info Proyek & Sistem</div>
-    <div class="card">
-      <div class="row2">
-        <div class="field"><label><span class="dot"></span>Nama Aplikasi</label><input type="text" id="app_name" placeholder="EFS Modul FPSL Technical" /></div>
-        <div class="field"><label><span class="dot"></span>Nama Project</label><input type="text" id="project_name" placeholder="EFS-Technical-N-2026-002..." /></div>
+  <div class="main-content">
+    <div class="container">
+
+      <div class="step-label" data-n="01">Info Proyek & Sistem</div>
+      <div class="card">
+        <div class="row2">
+          <div class="field"><label><span class="dot"></span>Nama Aplikasi</label><input type="text" id="app_name"
+              placeholder="EFS Modul FPSL Technical" /></div>
+          <div class="field"><label><span class="dot"></span>Nama Project</label><input type="text" id="project_name"
+              placeholder="EFS-Technical-N-2026-002..." /></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Link Jira</label><input type="text" id="jira_link"
+              placeholder="https://jira.bri.co.id/browse/..." /></div>
+          <div class="field"><label>Link iRIS</label><input type="text" id="iris_link"
+              placeholder="https://iris.bri.co.id/HEAT/..." /></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>No. Tiket NCM</label><input type="text" id="ticket_no" placeholder="NCM2605..." />
+          </div>
+          <div class="field">
+            <label>Kategori (Metode)</label>
+            <select id="category">
+              <option value="">Pilih Metode...</option>
+              <option value="Agile">Agile</option>
+              <option value="Waterfall">Waterfall</option>
+              <option value="OPS">OPS</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Tipe Deploy</label>
+            <select id="type">
+              <option value="Rollout">Rollout</option>
+              <option value="Hotfix">Hotfix</option>
+            </select>
+          </div>
+          <div class="field"><label>Criticality</label>
+            <select id="criticality">
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+            </select>
+          </div>
+        </div>
       </div>
-      <div class="row2">
-        <div class="field"><label>Link Jira</label><input type="text" id="jira_link" placeholder="https://jira.bri.co.id/browse/..." /></div>
-        <div class="field"><label>Link iRIS</label><input type="text" id="iris_link" placeholder="https://iris.bri.co.id/HEAT/..." /></div>
+
+      <div class="step-label" data-n="02">Scope Pengembangan</div>
+      <div class="card">
+        <div class="field"><label>1. Latar Belakang</label><textarea id="background"
+            placeholder="Pengelolaan user dan role di SAP saat ini masih..."></textarea></div>
+        <div class="field"><label>2. Tujuan Perubahan</label><textarea id="purpose"
+            placeholder="Integrasi SAP-IDM bertujuan untuk..."></textarea></div>
+        <div class="field"><label>3. Outcome</label><textarea id="outcome"
+            placeholder="Proses pengelolaan akses user menjadi lebih cepat..."></textarea></div>
       </div>
-      <div class="row2">
-        <div class="field"><label>No. Tiket NCM</label><input type="text" id="ticket_no" placeholder="NCM2605..." /></div>
+
+      <div class="step-label" data-n="03">Tanggal & Waktu</div>
+      <div class="card">
+        <div class="row3">
+          <div class="field"><label>Tanggal SIT</label><input type="date" id="sit_date" /></div>
+          <div class="field"><label>Tanggal UAT</label><input type="date" id="uat_date" /></div>
+          <div class="field"><label>Rencana Deploy</label><input type="date" id="deploy_date" /></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Start Time Deploy</label><input type="time" id="start_time" /></div>
+          <div class="field"><label>End Time Deploy</label><input type="time" id="end_time" /></div>
+        </div>
+      </div>
+
+      <div class="step-label" data-n="04">Status Fase Testing</div>
+      <div class="card">
+        <div class="row3">
+          <div class="field">
+            <label>Status SIT</label>
+            <select id="sit_status">
+              <option value="Belum Dimulai ⏳">Belum Dimulai ⏳</option>
+              <option value="In Progress 🔄">In Progress 🔄</option>
+              <option value="Done ✅" selected>Done ✅</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status UAT</label>
+            <select id="uat_status">
+              <option value="Belum Dimulai ⏳" selected>Belum Dimulai ⏳</option>
+              <option value="In Progress 🔄">In Progress 🔄</option>
+              <option value="Done ✅">Done ✅</option>
+            </select>
+          </div>
+          <div class="field">
+            <label style="color:var(--accent); font-weight:700;">Overall Progress</label>
+            <select id="progress_testing">
+              <option value="In Progress Testing 🔄">In Progress Testing 🔄</option>
+              <option value="Ready to Deploy ✅" selected>Ready to Deploy ✅</option>
+              <option value="Back To Dev 🔁">Back To Dev 🔁</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-label" data-n="05">Test Case (SIT & UAT)</div>
+      <div class="card">
+
+        <div class="field"><label style="color:var(--accent);">SIT Count (Otomatis dari List Bawah)</label></div>
+        <div class="row3" style="margin-bottom: 1.5rem;">
+          <div class="field"><label>Total TC SIT</label><input type="text" id="tc_total" value="0" readonly
+              class="readonly-input" /></div>
+          <div class="field"><label>Happy Flow</label><input type="text" id="tc_happy" value="0" readonly
+              class="readonly-input" /></div>
+          <div class="field"><label>Unhappy Flow</label><input type="text" id="tc_unhappy" value="0" readonly
+              class="readonly-input" /></div>
+        </div>
+        <div class="row2" style="margin-top:-10px; margin-bottom:1.5rem;">
+          <div class="field"><label>Defect</label><input type="text" id="tc_defect" value="0" readonly
+              class="readonly-input" /></div>
+          <div class="field"><label>TC Regresi</label><input type="text" id="tc_regresi" value="0" readonly
+              class="readonly-input" /></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field"><label style="color:var(--warn);">UAT Count <span class="badge-uat">Bisa Diedit
+              Manual</span></label></div>
+        <div class="row3" style="margin-bottom: 1.5rem;">
+          <div class="field"><label>Total TC UAT</label><input type="number" id="uat_tc_total" value="0"
+              class="editable-count" /></div>
+          <div class="field"><label>Happy Flow UAT</label><input type="number" id="uat_tc_happy" value="0"
+              class="editable-count" /></div>
+          <div class="field"><label>Unhappy Flow UAT</label><input type="number" id="uat_tc_unhappy" value="0"
+              class="editable-count" /></div>
+        </div>
+        <div class="row3" style="margin-top:-10px; margin-bottom:1.5rem;">
+          <div class="field"><label>Defect UAT</label><input type="number" id="uat_tc_defect" value="0"
+              class="editable-count" /></div>
+        </div>
+
+        <div class="field" style="border-top: 1.5px solid var(--border); padding-top: 15px;">
+          <label><span class="dot"></span>Data Preparation (SIT/UAT)</label>
+          <div class="ch-builder">
+            <input type="text" id="inp_data_prep" placeholder="Ex: Data Dummy User Management IDM"
+              onkeypress="if(event.key==='Enter') addToList('data_prep', 'inp_data_prep')" />
+            <button class="ch-add-btn" onclick="addToList('data_prep', 'inp_data_prep')">+</button>
+          </div>
+          <div class="ch-list" id="list_data_prep"></div>
+        </div>
+
+        <div class="field" style="margin-top: 15px;">
+          <label><span class="dot"></span>List Detail TC Happy Flow (SIT)</label>
+          <div class="ch-builder">
+            <input type="text" id="inp_tc_happy" placeholder="Ex: [MFA][Joiner] Fetch New User"
+              onkeypress="if(event.key==='Enter') addToList('tc_happy', 'inp_tc_happy')" />
+            <button class="ch-add-btn" onclick="addToList('tc_happy', 'inp_tc_happy')">+</button>
+          </div>
+          <div class="ch-list" id="list_tc_happy"></div>
+        </div>
+
+        <div class="field" style="margin-top: 15px;">
+          <label><span class="dot"></span>List Detail TC Unhappy Flow (SIT)</label>
+          <div class="ch-builder">
+            <input type="text" id="inp_tc_unhappy" placeholder="Ex: [MFA][Joiner] Fetch Duplicate User Returns Error"
+              onkeypress="if(event.key==='Enter') addToList('tc_unhappy', 'inp_tc_unhappy')" />
+            <button class="ch-add-btn" onclick="addToList('tc_unhappy', 'inp_tc_unhappy')">+</button>
+          </div>
+          <div class="ch-list" id="list_tc_unhappy"></div>
+        </div>
+
+        <div class="row2" style="margin-top: 15px;">
+          <div class="field">
+            <label>Defect (Opsional)</label>
+            <div class="ch-builder">
+              <input type="text" id="inp_tc_defect" placeholder="Tambah defect"
+                onkeypress="if(event.key==='Enter') addToList('tc_defect', 'inp_tc_defect')" />
+              <button class="ch-add-btn" onclick="addToList('tc_defect', 'inp_tc_defect')">+</button>
+            </div>
+            <div class="ch-list" id="list_tc_defect"></div>
+          </div>
+          <div class="field">
+            <label>TC Regresi (Opsional)</label>
+            <div class="ch-builder">
+              <input type="text" id="inp_tc_regresi" placeholder="Tambah TC regresi"
+                onkeypress="if(event.key==='Enter') addToList('tc_regresi', 'inp_tc_regresi')" />
+              <button class="ch-add-btn" onclick="addToList('tc_regresi', 'inp_tc_regresi')">+</button>
+            </div>
+            <div class="ch-list" id="list_tc_regresi"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-label" data-n="06">Checklist Deployment Test</div>
+      <div class="card">
         <div class="field">
-          <label>Kategori (Metode)</label>
-          <select id="category">
-            <option value="">Pilih Metode...</option>
-            <option value="Agile">Agile</option>
-            <option value="Waterfall">Waterfall</option>
-            <option value="OPS">OPS</option>
-          </select>
+          <label><span class="dot"></span>Happy Flow Deployment Test</label>
+          <div class="ch-builder">
+            <input type="text" id="inp_deploy_happy" placeholder="Ex: Check TR in System"
+              onkeypress="if(event.key==='Enter') addToList('deploy_happy', 'inp_deploy_happy')" />
+            <button class="ch-add-btn" onclick="addToList('deploy_happy', 'inp_deploy_happy')">+</button>
+          </div>
+          <div class="ch-list" id="list_deploy_happy"></div>
+        </div>
+
+        <div class="field" style="margin-top: 20px;">
+          <label><span class="dot"></span>Unhappy Flow Deployment Test</label>
+          <div class="ch-builder">
+            <input type="text" id="inp_deploy_unhappy" placeholder="Ex: Error handling Background Job"
+              onkeypress="if(event.key==='Enter') addToList('deploy_unhappy', 'inp_deploy_unhappy')" />
+            <button class="ch-add-btn" onclick="addToList('deploy_unhappy', 'inp_deploy_unhappy')">+</button>
+          </div>
+          <div class="ch-list" id="list_deploy_unhappy"></div>
         </div>
       </div>
-      <div class="row2">
-        <div class="field"><label>Tipe Deploy</label>
-          <select id="type">
-            <option value="Rollout">Rollout</option>
-            <option value="Hotfix">Hotfix</option>
-          </select>
+
+      <div class="step-label" data-n="07">PIC & Status Deploy</div>
+      <div class="card">
+        <div class="row2">
+          <div class="field"><label>Fungsi QA</label><input type="text" id="fungsi_qa" value="QA_QFN" /></div>
+          <div class="field">
+            <label>Test Lead</label>
+            <select id="pic_tl">
+              <option value="">Pilih Test Lead...</option>
+              <option value="Ahmad Rizal Muttaqin (QFN)">Ahmad Rizal Muttaqin (QFN)</option>
+              <option value="Muhamad Reza Febriyanto (QFN)">Muhamad Reza Febriyanto (QFN)</option>
+              <option value="Muhammad Farrel Bismoko (QFN)">Muhammad Farrel Bismoko (QFN)</option>
+              <option value="Mutiara Ratna Shafura Sudrajad (QFN)">Mutiara Ratna Shafura Sudrajad (QFN)</option>
+              <option value="Olivia Gita Frederica (QFN)">Olivia Gita Frederica (QFN)</option>
+            </select>
+          </div>
         </div>
-        <div class="field"><label>Criticality</label>
-          <select id="criticality"><option>Low</option><option selected>Medium</option><option>High</option></select>
+        <div class="row2">
+          <div class="field">
+            <label>Tester</label>
+            <select id="pic_tester">
+              <option value="">Pilih Tester...</option>
+              <option value="Andhika Surya Putra (QFN)">Andhika Surya Putra (QFN)</option>
+              <option value="Farhan Dasyandra Larenzo (QFN)">Farhan Dasyandra Larenzo (QFN)</option>
+              <option value="Jefri Fahrian (QFN)">Jefri Fahrian (QFN)</option>
+              <option value="Muhamad Reza Febriyanto (QFN)">Muhamad Reza Febriyanto (QFN)</option>
+              <option value="Muhammad Abi Fadila (QFN)">Muhammad Abi Fadila (QFN)</option>
+              <option value="Muhammad Farrel Bismoko (QFN)">Muhammad Farrel Bismoko (QFN)</option>
+              <option value="Nanda Syahputra (QFN)">Nanda Syahputra (QFN)</option>
+              <option value="Nurul Islamy Zakiyya T. (QFN)">Nurul Islamy Zakiyya T. (QFN)</option>
+              <option value="Rezekinta Sembiring (QFN)">Rezekinta Sembiring (QFN)</option>
+              <option value="Siska Tria Pramesti Wiori (QFN)">Siska Tria Pramesti Wiori (QFN)</option>
+              <option value="Tiur Maida (QFN)">Tiur Maida (QFN)</option>
+              <option value="Wulan Pertiwi (QFN)">Wulan Pertiwi (QFN)</option>
+            </select>
+          </div>
+          <div class="field"><label>PO / User</label><input type="text" id="pic_po" placeholder="Nama (Kode/Divisi)" />
+          </div>
         </div>
-      </div>
-    </div>
+        <div class="row2">
+          <div class="field"><label>Dev</label><input type="text" id="pic_dev" placeholder="Nama (Divisi)" /></div>
+          <div class="field"><label>Ops</label><input type="text" id="pic_ops" placeholder="Nama (Divisi)" /></div>
+        </div>
 
-    <div class="step-label" data-n="02">Scope Pengembangan</div>
-    <div class="card">
-      <div class="field"><label>1. Latar Belakang</label><textarea id="background" placeholder="Pengelolaan user dan role di SAP saat ini masih..."></textarea></div>
-      <div class="field"><label>2. Tujuan Perubahan</label><textarea id="purpose" placeholder="Integrasi SAP-IDM bertujuan untuk..."></textarea></div>
-      <div class="field"><label>3. Outcome</label><textarea id="outcome" placeholder="Proses pengelolaan akses user menjadi lebih cepat..."></textarea></div>
-    </div>
+        <div class="divider"></div>
 
-    <div class="step-label" data-n="03">Tanggal & Waktu</div>
-    <div class="card">
-      <div class="row3">
-        <div class="field"><label>Tanggal SIT</label><input type="date" id="sit_date" /></div>
-        <div class="field"><label>Tanggal UAT</label><input type="date" id="uat_date" /></div>
-        <div class="field"><label>Rencana Deploy</label><input type="date" id="deploy_date" /></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>Start Time Deploy</label><input type="time" id="start_time" /></div>
-        <div class="field"><label>End Time Deploy</label><input type="time" id="end_time" /></div>
-      </div>
-    </div>
-
-    <div class="step-label" data-n="04">Status Fase Testing (Untuk Laporan Aktivitas)</div>
-    <div class="card">
-      <div class="row2">
         <div class="field">
-          <label>Status SIT</label>
-          <select id="sit_status">
-            <option value="Belum Dimulai ⏳">Belum Dimulai ⏳</option>
-            <option value="In Progress 🔄">In Progress 🔄</option>
-            <option value="Done ✅" selected>Done ✅</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Status UAT</label>
-          <select id="uat_status">
-            <option value="Belum Dimulai ⏳" selected>Belum Dimulai ⏳</option>
-            <option value="In Progress 🔄">In Progress 🔄</option>
+          <label>Status Deploy Saat Ini</label>
+          <select id="deploy_status">
+            <option value="In Progress ⌛️">In Progress ⌛️</option>
             <option value="Done ✅">Done ✅</option>
+            <option value="Failed ❌">Failed ❌</option>
           </select>
         </div>
+        <div class="field"><label>Notes / Keterangan</label><textarea id="notes"
+            placeholder="Menunggu Hasil Background Job..."></textarea></div>
       </div>
+
+      <div class="btn-row">
+        <button class="gen-btn" onclick="generateReport()">Buka Laporan Ter-Generate 📄</button>
+      </div>
+
+      <div class="result-box" id="result-box">
+        <div class="tab-row">
+          <button class="t-btn active" onclick="showTab(0)">Aktivitas Testing</button>
+          <button class="t-btn" onclick="showTab(1)">Readiness Report</button>
+          <button class="t-btn" onclick="showTab(2)">Deploy Test Report</button>
+        </div>
+        <div class="out-card">
+          <button class="copy-btn" id="copy-btn" onclick="copyReport()">Salin Text</button>
+          <div class="report-text" id="report-content"></div>
+        </div>
+      </div>
+
     </div>
-
-    <div class="step-label" data-n="05">Test Case (SIT & UAT)</div>
-    <div class="card">
-      
-      <div class="field"><label style="color:var(--accent);">SIT Count (Otomatis dari List Bawah)</label></div>
-      <div class="row3" style="margin-bottom: 1.5rem;">
-        <div class="field"><label>Total TC SIT</label><input type="text" id="tc_total" value="0" readonly class="readonly-input" /></div>
-        <div class="field"><label>Happy Flow</label><input type="text" id="tc_happy" value="0" readonly class="readonly-input" /></div>
-        <div class="field"><label>Unhappy Flow</label><input type="text" id="tc_unhappy" value="0" readonly class="readonly-input" /></div>
-      </div>
-      <div class="row2" style="margin-top:-10px; margin-bottom:1.5rem;">
-        <div class="field"><label>Defect</label><input type="text" id="tc_defect" value="0" readonly class="readonly-input" /></div>
-        <div class="field"><label>TC Regresi</label><input type="text" id="tc_regresi" value="0" readonly class="readonly-input" /></div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="field"><label style="color:var(--warn);">UAT Count <span class="badge-uat">Bisa Diedit Manual</span></label></div>
-      <div class="row3" style="margin-bottom: 1.5rem;">
-        <div class="field"><label>Total TC UAT</label><input type="number" id="uat_tc_total" value="0" class="editable-count" /></div>
-        <div class="field"><label>Happy Flow UAT</label><input type="number" id="uat_tc_happy" value="0" class="editable-count" /></div>
-        <div class="field"><label>Unhappy Flow UAT</label><input type="number" id="uat_tc_unhappy" value="0" class="editable-count" /></div>
-      </div>
-      <div class="row3" style="margin-top:-10px; margin-bottom:1.5rem;">
-        <div class="field"><label>Defect UAT</label><input type="number" id="uat_tc_defect" value="0" class="editable-count" /></div>
-      </div>
-
-      <div class="field" style="border-top: 1.5px solid var(--border); padding-top: 15px;">
-        <label><span class="dot"></span>Data Preparation (SIT/UAT)</label>
-        <div class="ch-builder">
-          <input type="text" id="inp_data_prep" placeholder="Ex: Data Dummy User Management IDM" onkeypress="if(event.key==='Enter') addToList('data_prep', 'inp_data_prep')" />
-          <button class="ch-add-btn" onclick="addToList('data_prep', 'inp_data_prep')">+</button>
-        </div>
-        <div class="ch-list" id="list_data_prep"></div>
-      </div>
-
-      <div class="field" style="margin-top: 15px;">
-        <label><span class="dot"></span>List Detail TC Happy Flow (SIT)</label>
-        <div class="ch-builder">
-          <input type="text" id="inp_tc_happy" placeholder="Ex: [MFA][Joiner] Fetch New User" onkeypress="if(event.key==='Enter') addToList('tc_happy', 'inp_tc_happy')" />
-          <button class="ch-add-btn" onclick="addToList('tc_happy', 'inp_tc_happy')">+</button>
-        </div>
-        <div class="ch-list" id="list_tc_happy"></div>
-      </div>
-
-      <div class="field" style="margin-top: 15px;">
-        <label><span class="dot"></span>List Detail TC Unhappy Flow (SIT)</label>
-        <div class="ch-builder">
-          <input type="text" id="inp_tc_unhappy" placeholder="Ex: [MFA][Joiner] Fetch Duplicate User Returns Error" onkeypress="if(event.key==='Enter') addToList('tc_unhappy', 'inp_tc_unhappy')" />
-          <button class="ch-add-btn" onclick="addToList('tc_unhappy', 'inp_tc_unhappy')">+</button>
-        </div>
-        <div class="ch-list" id="list_tc_unhappy"></div>
-      </div>
-      
-      <div class="row2" style="margin-top: 15px;">
-        <div class="field">
-          <label>Defect (Opsional)</label>
-          <div class="ch-builder">
-            <input type="text" id="inp_tc_defect" placeholder="Tambah defect" onkeypress="if(event.key==='Enter') addToList('tc_defect', 'inp_tc_defect')" />
-            <button class="ch-add-btn" onclick="addToList('tc_defect', 'inp_tc_defect')">+</button>
-          </div>
-          <div class="ch-list" id="list_tc_defect"></div>
-        </div>
-        <div class="field">
-          <label>TC Regresi (Opsional)</label>
-          <div class="ch-builder">
-            <input type="text" id="inp_tc_regresi" placeholder="Tambah TC regresi" onkeypress="if(event.key==='Enter') addToList('tc_regresi', 'inp_tc_regresi')" />
-            <button class="ch-add-btn" onclick="addToList('tc_regresi', 'inp_tc_regresi')">+</button>
-          </div>
-          <div class="ch-list" id="list_tc_regresi"></div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="step-label" data-n="06">Checklist Deployment Test</div>
-    <div class="card">
-      <div class="field">
-        <label><span class="dot"></span>Happy Flow Deployment Test</label>
-        <div class="ch-builder">
-          <input type="text" id="inp_deploy_happy" placeholder="Ex: Check TR in System" onkeypress="if(event.key==='Enter') addToList('deploy_happy', 'inp_deploy_happy')" />
-          <button class="ch-add-btn" onclick="addToList('deploy_happy', 'inp_deploy_happy')">+</button>
-        </div>
-        <div class="ch-list" id="list_deploy_happy"></div>
-      </div>
-
-      <div class="field" style="margin-top: 20px;">
-        <label><span class="dot"></span>Unhappy Flow Deployment Test</label>
-        <div class="ch-builder">
-          <input type="text" id="inp_deploy_unhappy" placeholder="Ex: Error handling Background Job" onkeypress="if(event.key==='Enter') addToList('deploy_unhappy', 'inp_deploy_unhappy')" />
-          <button class="ch-add-btn" onclick="addToList('deploy_unhappy', 'inp_deploy_unhappy')">+</button>
-        </div>
-        <div class="ch-list" id="list_deploy_unhappy"></div>
-      </div>
-    </div>
-
-    <div class="step-label" data-n="07">PIC & Status Deploy</div>
-    <div class="card">
-      <div class="row2">
-        <div class="field"><label>Fungsi QA</label><input type="text" id="fungsi_qa" value="QA_QFN" /></div>
-        <div class="field">
-          <label>Test Lead</label>
-          <select id="pic_tl">
-            <option value="">Pilih Test Lead...</option>
-            <option value="Ahmad Rizal Muttaqin (QFN)">Ahmad Rizal Muttaqin (QFN)</option>
-            <option value="Muhamad Reza Febriyanto (QFN)">Muhamad Reza Febriyanto (QFN)</option>
-            <option value="Muhammad Farrel Bismoko (QFN)">Muhammad Farrel Bismoko (QFN)</option>
-            <option value="Mutiara Ratna Shafura Sudrajad (QFN)">Mutiara Ratna Shafura Sudrajad (QFN)</option>
-            <option value="Olivia Gita Frederica (QFN)">Olivia Gita Frederica (QFN)</option>
-          </select>
-        </div>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label>Tester</label>
-          <select id="pic_tester">
-            <option value="">Pilih Tester...</option>
-            <option value="Andhika Surya Putra (QFN)">Andhika Surya Putra (QFN)</option>
-            <option value="Farhan Dasyandra Larenzo (QFN)">Farhan Dasyandra Larenzo (QFN)</option>
-            <option value="Jefri Fahrian (QFN)">Jefri Fahrian (QFN)</option>
-            <option value="Muhamad Reza Febriyanto (QFN)">Muhamad Reza Febriyanto (QFN)</option>
-            <option value="Muhammad Abi Fadila (QFN)">Muhammad Abi Fadila (QFN)</option>
-            <option value="Muhammad Farrel Bismoko (QFN)">Muhammad Farrel Bismoko (QFN)</option>
-            <option value="Nanda Syahputra (QFN)">Nanda Syahputra (QFN)</option>
-            <option value="Nurul Islamy Zakiyya T. (QFN)">Nurul Islamy Zakiyya T. (QFN)</option>
-            <option value="Rezekinta Sembiring (QFN)">Rezekinta Sembiring (QFN)</option>
-            <option value="Siska Tria Pramesti Wiori (QFN)">Siska Tria Pramesti Wiori (QFN)</option>
-            <option value="Tiur Maida (QFN)">Tiur Maida (QFN)</option>
-            <option value="Wulan Pertiwi (QFN)">Wulan Pertiwi (QFN)</option>
-          </select>
-        </div>
-        <div class="field"><label>PO / User</label><input type="text" id="pic_po" placeholder="Nama (Kode/Divisi)" /></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>Dev</label><input type="text" id="pic_dev" placeholder="Nama (Divisi)" /></div>
-        <div class="field"><label>Ops</label><input type="text" id="pic_ops" placeholder="Nama (Divisi)" /></div>
-      </div>
-      
-      <div class="divider"></div>
-      
-      <div class="field">
-        <label>Status Deploy Saat Ini</label>
-        <select id="deploy_status">
-          <option value="In Progress ⌛️">In Progress ⌛️</option>
-          <option value="Done ✅">Done ✅</option>
-          <option value="Failed ❌">Failed ❌</option>
-        </select>
-      </div>
-      <div class="field"><label>Notes / Keterangan</label><textarea id="notes" placeholder="Menunggu Hasil Background Job..."></textarea></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="gen-btn" onclick="generateReport()">Buka Laporan Ter-Generate 📄</button>
-    </div>
-
-    <div class="result-box" id="result-box">
-      <div class="tab-row">
-        <button class="t-btn active" onclick="showTab(0)">Aktivitas Testing</button>
-        <button class="t-btn" onclick="showTab(1)">Readiness Report</button>
-        <button class="t-btn" onclick="showTab(2)">Deploy Test Report</button>
-      </div>
-      <div class="out-card">
-        <button class="copy-btn" id="copy-btn" onclick="copyReport()">Salin Text</button>
-        <div class="report-text" id="report-content"></div>
-      </div>
-    </div>
-
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<script>
-// --- STATE MANAGEMENT ---
-const STORE_KEY = 'qa_workspace_v5';
-let state = { activeTaskId: null, tasks: [] };
+  <script>
+    // --- STATE MANAGEMENT ---
+    const STORE_KEY = 'qa_workspace_v6';
+    let state = { activeTaskId: null, tasks: [] };
 
-// Binding Fields (sekarang ditambah status & UAT counts)
-const BIND_FIELDS = [
-  'app_name','project_name','jira_link','iris_link','ticket_no','category','type','criticality',
-  'background','purpose','outcome','sit_date','uat_date','deploy_date','start_time','end_time',
-  'sit_status','uat_status', 'uat_tc_total', 'uat_tc_happy', 'uat_tc_unhappy', 'uat_tc_defect',
-  'fungsi_qa','pic_tl','pic_tester','pic_po','pic_dev','pic_ops','deploy_status','notes'
-];
+    // Binding Fields
+    const BIND_FIELDS = [
+      'app_name', 'project_name', 'jira_link', 'iris_link', 'ticket_no', 'category', 'type', 'criticality',
+      'background', 'purpose', 'outcome', 'sit_date', 'uat_date', 'deploy_date', 'start_time', 'end_time',
+      'sit_status', 'uat_status', 'progress_testing', 'uat_tc_total', 'uat_tc_happy', 'uat_tc_unhappy', 'uat_tc_defect',
+      'fungsi_qa', 'pic_tl', 'pic_tester', 'pic_po', 'pic_dev', 'pic_ops', 'deploy_status', 'notes'
+    ];
 
-let generatedReports = ['','',''];
-let currentTab = 0;
+    let generatedReports = ['', '', ''];
+    let currentTab = 0;
 
-function init() {
-  loadData();
-  if (state.tasks.length === 0) createNewTask();
-  else {
-    if (!state.activeTaskId) state.activeTaskId = state.tasks[0].id;
-    renderSidebar();
-    loadTaskToForm(state.activeTaskId);
-  }
+    function init() {
+      loadData();
+      if (state.tasks.length === 0) createNewTask();
+      else {
+        if (!state.activeTaskId) state.activeTaskId = state.tasks[0].id;
+        renderSidebar();
+        loadTaskToForm(state.activeTaskId);
+      }
 
-  BIND_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) {
-      el.addEventListener('input', () => { saveActiveTaskData(); renderSidebar(); });
-      el.addEventListener('change', () => { saveActiveTaskData(); renderSidebar(); });
+      BIND_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', () => { saveActiveTaskData(); renderSidebar(); });
+          el.addEventListener('change', () => { saveActiveTaskData(); renderSidebar(); });
+        }
+      });
     }
-  });
-}
 
-function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) state = JSON.parse(raw);
-  } catch(e) { console.error("Cache error", e); }
-}
-
-function createNewTask() {
-  const newId = 'task_' + Date.now();
-  const newTask = {
-    id: newId,
-    created: new Date().toISOString(),
-    data: {},
-    lists: {
-      data_prep: [], tc_happy: [], tc_unhappy: [], tc_defect: [], tc_regresi: [],
-      deploy_happy: [], deploy_unhappy: []
+    function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) state = JSON.parse(raw);
+      } catch (e) { console.error("Cache error", e); }
     }
-  };
-  
-  BIND_FIELDS.forEach(f => {
-    const el = document.getElementById(f);
-    newTask.data[f] = el ? (el.value || '') : '';
-  });
 
-  state.tasks.unshift(newTask);
-  switchTask(newId);
-  showToast('Task baru dibuat 📝');
-}
+    function createNewTask() {
+      const newId = 'task_' + Date.now();
+      const newTask = {
+        id: newId,
+        created: new Date().toISOString(),
+        data: {},
+        lists: {
+          data_prep: [], tc_happy: [], tc_unhappy: [], tc_defect: [], tc_regresi: [],
+          deploy_happy: [], deploy_unhappy: []
+        }
+      };
 
-function switchTask(taskId) {
-  saveActiveTaskData();
-  state.activeTaskId = taskId;
-  loadTaskToForm(taskId);
-  renderSidebar();
-  document.getElementById('result-box').style.display = 'none';
-}
+      BIND_FIELDS.forEach(f => {
+        const el = document.getElementById(f);
+        newTask.data[f] = el ? (el.value || '') : '';
+      });
 
-function deleteTask(taskId, event) {
-  event.stopPropagation();
-  if(!confirm('Hapus task ini?')) return;
-  state.tasks = state.tasks.filter(t => t.id !== taskId);
-  if(state.tasks.length === 0) createNewTask();
-  else {
-    if(state.activeTaskId === taskId) switchTask(state.tasks[0].id);
-    else renderSidebar();
-  }
-  saveData();
-}
+      state.tasks.unshift(newTask);
+      switchTask(newId);
+      showToast('Task baru dibuat 📝');
+    }
 
-function renderSidebar() {
-  const container = document.getElementById('task-list-container');
-  container.innerHTML = '';
-  state.tasks.forEach(task => {
-    const title = task.data.app_name || task.data.project_name || 'Draft Baru';
-    const dateStr = new Date(task.created).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
-    const div = document.createElement('div');
-    div.className = `task-item ${task.id === state.activeTaskId ? 'active' : ''}`;
-    div.onclick = () => switchTask(task.id);
-    div.innerHTML = `
+    function switchTask(taskId) {
+      saveActiveTaskData();
+      state.activeTaskId = taskId;
+      loadTaskToForm(taskId);
+      renderSidebar();
+      document.getElementById('result-box').style.display = 'none';
+    }
+
+    function deleteTask(taskId, event) {
+      event.stopPropagation();
+      if (!confirm('Hapus task ini?')) return;
+      state.tasks = state.tasks.filter(t => t.id !== taskId);
+      if (state.tasks.length === 0) createNewTask();
+      else {
+        if (state.activeTaskId === taskId) switchTask(state.tasks[0].id);
+        else renderSidebar();
+      }
+      saveData();
+    }
+
+    function renderSidebar() {
+      const container = document.getElementById('task-list-container');
+      container.innerHTML = '';
+      state.tasks.forEach(task => {
+        const title = task.data.app_name || task.data.project_name || 'Draft Baru';
+        const dateStr = new Date(task.created).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const div = document.createElement('div');
+        div.className = `task-item ${task.id === state.activeTaskId ? 'active' : ''}`;
+        div.onclick = () => switchTask(task.id);
+        div.innerHTML = `
       <div class="task-title">${title}</div>
       <div class="task-date">Dibuat: ${dateStr}</div>
       <button class="delete-task" onclick="deleteTask('${task.id}', event)">✖</button>
     `;
-    container.appendChild(div);
-  });
-}
-
-function saveActiveTaskData() {
-  if(!state.activeTaskId) return;
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  if(!task) return;
-  BIND_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) task.data[id] = el.value;
-  });
-  saveData();
-}
-
-function loadTaskToForm(taskId) {
-  const task = state.tasks.find(t => t.id === taskId);
-  if(!task) return;
-  
-  BIND_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if(el && task.data[id] !== undefined) el.value = task.data[id];
-  });
-  
-  if(!task.lists) task.lists = { data_prep:[], tc_happy:[], tc_unhappy:[], tc_defect:[], tc_regresi:[], deploy_happy:[], deploy_unhappy:[] };
-  
-  renderAllLists();
-}
-
-function addToList(listName, inputId) {
-  const input = document.getElementById(inputId);
-  const text = input.value.trim();
-  if(!text) return;
-  
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  if(listName.startsWith('deploy_')) {
-    task.lists[listName].push({ text: text, status: '⌛️' });
-  } else {
-    task.lists[listName].push({ text: text });
-  }
-  
-  input.value = '';
-  saveData();
-  renderList(listName);
-  updateCountsUI();
-}
-
-function toggleListStatus(listName, index) {
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  const current = task.lists[listName][index].status;
-  if(current === '⌛️') task.lists[listName][index].status = '✅';
-  else if(current === '✅') task.lists[listName][index].status = '❌';
-  else task.lists[listName][index].status = '⌛️';
-  saveData();
-  renderList(listName);
-}
-
-function removeListItem(listName, index) {
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  task.lists[listName].splice(index, 1);
-  saveData();
-  renderList(listName);
-  updateCountsUI();
-}
-
-function renderAllLists() {
-  ['data_prep','tc_happy','tc_unhappy','tc_defect','tc_regresi','deploy_happy','deploy_unhappy'].forEach(n => renderList(n));
-  updateCountsUI();
-}
-
-function renderList(listName) {
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  const container = document.getElementById('list_' + listName);
-  if(!container) return;
-  container.innerHTML = '';
-  
-  if(!task || !task.lists || !task.lists[listName]) return;
-  
-  task.lists[listName].forEach((item, idx) => {
-    const div = document.createElement('div');
-    div.className = 'ch-item';
-    
-    let innerHtml = `<div class="ch-text">${idx+1}. ${item.text}</div>`;
-    if(listName.startsWith('deploy_')) {
-      innerHtml += `<button class="ch-toggle" onclick="toggleListStatus('${listName}', ${idx})">${item.status}</button>`;
+        container.appendChild(div);
+      });
     }
-    innerHtml += `<button class="ch-del" onclick="removeListItem('${listName}', ${idx})">×</button>`;
-    
-    div.innerHTML = innerHtml;
-    container.appendChild(div);
-  });
-}
 
-function updateCountsUI() {
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  if(!task || !task.lists) return;
-  
-  const cHappy = task.lists.tc_happy ? task.lists.tc_happy.length : 0;
-  const cUnhappy = task.lists.tc_unhappy ? task.lists.tc_unhappy.length : 0;
-  const cDefect = task.lists.tc_defect ? task.lists.tc_defect.length : 0;
-  const cRegresi = task.lists.tc_regresi ? task.lists.tc_regresi.length : 0;
-  const cTotal = cHappy + cUnhappy;
-  
-  document.getElementById('tc_total').value = cTotal;
-  document.getElementById('tc_happy').value = cHappy;
-  document.getElementById('tc_unhappy').value = cUnhappy;
-  document.getElementById('tc_defect').value = cDefect;
-  document.getElementById('tc_regresi').value = cRegresi;
+    function saveActiveTaskData() {
+      if (!state.activeTaskId) return;
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      if (!task) return;
+      BIND_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) task.data[id] = el.value;
+      });
+      saveData();
+    }
 
-  // Auto-sync ke UAT jika nilai UAT sebelumnya masih sama atau 0 (smart sync)
-  document.getElementById('uat_tc_total').value = cTotal;
-  document.getElementById('uat_tc_happy').value = cHappy;
-  document.getElementById('uat_tc_unhappy').value = cUnhappy;
-  document.getElementById('uat_tc_defect').value = cDefect;
-}
+    function loadTaskToForm(taskId) {
+      const task = state.tasks.find(t => t.id === taskId);
+      if (!task) return;
 
-function fmtDate(d) {
-  if (!d) return '-';
-  const [y,m,day] = d.split('-');
-  return `${day}-${m}-${y}`;
-}
-function fmtDateIDM(d) {
-  if (!d) return '-';
-  const dateObj = new Date(d);
-  return dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long' });
-}
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
+      BIND_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && task.data[id] !== undefined) el.value = task.data[id];
+      });
 
-// --- GENERATOR ENGINE ---
-function generateReport() {
-  saveActiveTaskData();
-  const task = state.tasks.find(t => t.id === state.activeTaskId);
-  const d = task.data;
-  const lst = task.lists;
-  
-  // Basic formats
-  const deployStartFmt = (d.deploy_date && d.start_time) ? `${d.deploy_date} ${d.start_time}` : '-';
-  const deployEndFmt = (d.deploy_date && d.end_time) ? `${d.deploy_date} ${d.end_time}` : '-';
-  const lastUpdateDeploy = (d.deploy_date && d.end_time) ? `${fmtDate(d.deploy_date)}, ${d.end_time.replace(':','.')}` : '-';
-  const irisLinkFmt = d.iris_link ? `[IRIS|${d.iris_link}]` : '-';
+      if (!task.lists) task.lists = { data_prep: [], tc_happy: [], tc_unhappy: [], tc_defect: [], tc_regresi: [], deploy_happy: [], deploy_unhappy: [] };
 
-  // TC Counts (SIT / Default)
-  const tcHappyCount = lst.tc_happy.length;
-  const tcUnhappyCount = lst.tc_unhappy.length;
-  const tcTotalCount = tcHappyCount + tcUnhappyCount;
-  const tcDefectCount = lst.tc_defect.length;
-  const tcRegresiCount = lst.tc_regresi.length;
+      renderAllLists();
+    }
 
-  const depHappyCount = lst.deploy_happy.length;
-  const depUnhappyCount = lst.deploy_unhappy.length;
+    function addToList(listName, inputId) {
+      const input = document.getElementById(inputId);
+      const text = input.value.trim();
+      if (!text) return;
 
-  const prepBlock = lst.data_prep.length > 0 ? lst.data_prep.map(i => `> ${i.text}`).join('\n') : '> -';
-  const tcHappyBlock = lst.tc_happy.length > 0 ? lst.tc_happy.map((i, idx) => `${idx+1}. ${i.text}`).join('\n') : '-';
-  const tcUnhappyBlock = lst.tc_unhappy.length > 0 ? lst.tc_unhappy.map((i, idx) => `${idx+1}. ${i.text}`).join('\n') : '-';
-  
-  const depHappyPlainBlock = lst.deploy_happy.length > 0 ? lst.deploy_happy.map(i => `- ${i.text}`).join('\n') : '-';
-  const depUnhappyPlainBlock = lst.deploy_unhappy.length > 0 ? lst.deploy_unhappy.map(i => `- ${i.text}`).join('\n') : '-';
-  
-  const depHappyStatusBlock = lst.deploy_happy.length > 0 ? lst.deploy_happy.map(i => `- ${i.text} ${i.status}`).join('\n') : '-';
-  const depUnhappyStatusBlock = lst.deploy_unhappy.length > 0 ? lst.deploy_unhappy.map(i => `- ${i.text} ${i.status}`).join('\n') : '-';
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      if (listName.startsWith('deploy_')) {
+        task.lists[listName].push({ text: text, status: '⌛️' });
+      } else {
+        task.lists[listName].push({ text: text });
+      }
 
-  const uatNoteLine = fmtDateIDM(d.uat_date) !== '-' ? `UAT ${fmtDateIDM(d.uat_date)}` : '';
+      input.value = '';
+      saveData();
+      renderList(listName);
+      updateCountsUI();
+    }
 
-  // LOGIC AKTIVITAS TESTING (SIT)
-  let sitSection = '';
-  if (d.sit_status === 'Belum Dimulai ⏳') {
-    sitSection = `2. SIT: Belum dimulai ⏳`;
-  } else if (d.sit_status === 'In Progress 🔄') {
-    sitSection = `2. SIT: jumlah ${tcTotalCount} TC 🔄\n> Happy: ${tcHappyCount} 🔄\n> Unhappy: ${tcUnhappyCount} 🔄\n> Defect: ${tcDefectCount}`;
-  } else {
-    sitSection = `2. SIT: jumlah ${tcTotalCount} TC ✅\n> Happy: ${tcHappyCount} ✅\n> Unhappy: ${tcUnhappyCount} ✅\n> Defect: ${tcDefectCount}`;
-  }
+    function toggleListStatus(listName, index) {
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      const current = task.lists[listName][index].status;
+      if (current === '⌛️') task.lists[listName][index].status = '✅';
+      else if (current === '✅') task.lists[listName][index].status = '❌';
+      else task.lists[listName][index].status = '⌛️';
+      saveData();
+      renderList(listName);
+    }
 
-  // LOGIC AKTIVITAS TESTING (UAT)
-  let uatSection = '';
-  if (d.uat_status === 'Belum Dimulai ⏳') {
-    uatSection = `3. UAT: Belum dimulai ⏳`;
-  } else if (d.uat_status === 'In Progress 🔄') {
-    uatSection = `3. UAT: ${d.uat_tc_total} TC 🔄\n> Happy: ${d.uat_tc_happy} 🔄\n> Unhappy: ${d.uat_tc_unhappy} 🔄\n> Defect: ${d.uat_tc_defect}`;
-  } else {
-    uatSection = `3. UAT: ${d.uat_tc_total} TC ✅\n> Happy: ${d.uat_tc_happy} ✅\n> Unhappy: ${d.uat_tc_unhappy} ✅\n> Defect: ${d.uat_tc_defect}`;
-  }
+    function removeListItem(listName, index) {
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      task.lists[listName].splice(index, 1);
+      saveData();
+      renderList(listName);
+      updateCountsUI();
+    }
 
-  // ── REPORT 0: UPDATE AKTIVITAS TESTING ──
-  generatedReports[0] =
-`*Update Report Aktivitas Testing*
+    function renderAllLists() {
+      ['data_prep', 'tc_happy', 'tc_unhappy', 'tc_defect', 'tc_regresi', 'deploy_happy', 'deploy_unhappy'].forEach(n => renderList(n));
+      updateCountsUI();
+    }
+
+    function renderList(listName) {
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      const container = document.getElementById('list_' + listName);
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!task || !task.lists || !task.lists[listName]) return;
+
+      task.lists[listName].forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'ch-item';
+
+        let innerHtml = `<div class="ch-text">${idx + 1}. ${item.text}</div>`;
+        if (listName.startsWith('deploy_')) {
+          innerHtml += `<button class="ch-toggle" onclick="toggleListStatus('${listName}', ${idx})">${item.status}</button>`;
+        }
+        innerHtml += `<button class="ch-del" onclick="removeListItem('${listName}', ${idx})">×</button>`;
+
+        div.innerHTML = innerHtml;
+        container.appendChild(div);
+      });
+    }
+
+    function updateCountsUI() {
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      if (!task || !task.lists) return;
+
+      const cHappy = task.lists.tc_happy ? task.lists.tc_happy.length : 0;
+      const cUnhappy = task.lists.tc_unhappy ? task.lists.tc_unhappy.length : 0;
+      const cDefect = task.lists.tc_defect ? task.lists.tc_defect.length : 0;
+      const cRegresi = task.lists.tc_regresi ? task.lists.tc_regresi.length : 0;
+      const cTotal = cHappy + cUnhappy;
+
+      document.getElementById('tc_total').value = cTotal;
+      document.getElementById('tc_happy').value = cHappy;
+      document.getElementById('tc_unhappy').value = cUnhappy;
+      document.getElementById('tc_defect').value = cDefect;
+      document.getElementById('tc_regresi').value = cRegresi;
+
+      document.getElementById('uat_tc_total').value = cTotal;
+      document.getElementById('uat_tc_happy').value = cHappy;
+      document.getElementById('uat_tc_unhappy').value = cUnhappy;
+      document.getElementById('uat_tc_defect').value = cDefect;
+    }
+
+    function fmtDate(d) {
+      if (!d) return '-';
+      const [y, m, day] = d.split('-');
+      return `${day}-${m}-${y}`;
+    }
+    function fmtDateIDM(d) {
+      if (!d) return '-';
+      const dateObj = new Date(d);
+      return dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long' });
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // --- GENERATOR ENGINE ---
+    function generateReport() {
+      saveActiveTaskData();
+      const task = state.tasks.find(t => t.id === state.activeTaskId);
+      const d = task.data;
+      const lst = task.lists;
+
+      const deployStartFmt = (d.deploy_date && d.start_time) ? `${d.deploy_date} ${d.start_time}` : '-';
+      const deployEndFmt = (d.deploy_date && d.end_time) ? `${d.deploy_date} ${d.end_time}` : '-';
+      const lastUpdateDeploy = (d.deploy_date && d.end_time) ? `${fmtDate(d.deploy_date)}, ${d.end_time.replace(':', '.')}` : '-';
+      const irisLinkFmt = d.iris_link ? `[IRIS|${d.iris_link}]` : '-';
+
+      const tcHappyCount = lst.tc_happy.length;
+      const tcUnhappyCount = lst.tc_unhappy.length;
+      const tcTotalCount = tcHappyCount + tcUnhappyCount;
+      const tcDefectCount = lst.tc_defect.length;
+      const tcRegresiCount = lst.tc_regresi.length;
+
+      const depHappyCount = lst.deploy_happy.length;
+      const depUnhappyCount = lst.deploy_unhappy.length;
+
+      const prepBlock = lst.data_prep.length > 0 ? lst.data_prep.map(i => `> ${i.text}`).join('\n') : '> -';
+      const tcHappyBlock = lst.tc_happy.length > 0 ? lst.tc_happy.map((i, idx) => `${idx + 1}. ${i.text}`).join('\n') : '-';
+      const tcUnhappyBlock = lst.tc_unhappy.length > 0 ? lst.tc_unhappy.map((i, idx) => `${idx + 1}. ${i.text}`).join('\n') : '-';
+
+      const depHappyPlainBlock = lst.deploy_happy.length > 0 ? lst.deploy_happy.map(i => `- ${i.text}`).join('\n') : '-';
+      const depUnhappyPlainBlock = lst.deploy_unhappy.length > 0 ? lst.deploy_unhappy.map(i => `- ${i.text}`).join('\n') : '-';
+
+      const depHappyStatusBlock = lst.deploy_happy.length > 0 ? lst.deploy_happy.map(i => `- ${i.text} ${i.status}`).join('\n') : '-';
+      const depUnhappyStatusBlock = lst.deploy_unhappy.length > 0 ? lst.deploy_unhappy.map(i => `- ${i.text} ${i.status}`).join('\n') : '-';
+
+      const uatNoteLine = fmtDateIDM(d.uat_date) !== '-' ? `UAT ${fmtDateIDM(d.uat_date)}` : '';
+
+      let sitSection = '';
+      if (d.sit_status === 'Belum Dimulai ⏳') {
+        sitSection = `2. SIT: Belum dimulai ⏳`;
+      } else if (d.sit_status === 'In Progress 🔄') {
+        sitSection = `2. SIT: jumlah ${tcTotalCount} TC 🔄\n> Happy: ${tcHappyCount} 🔄\n> Unhappy: ${tcUnhappyCount} 🔄\n> Defect: ${tcDefectCount}`;
+      } else {
+        sitSection = `2. SIT: jumlah ${tcTotalCount} TC ✅\n> Happy: ${tcHappyCount} ✅\n> Unhappy: ${tcUnhappyCount} ✅\n> Defect: ${tcDefectCount}`;
+      }
+
+      let uatSection = '';
+      if (d.uat_status === 'Belum Dimulai ⏳') {
+        uatSection = `3. UAT: Belum dimulai ⏳`;
+      } else if (d.uat_status === 'In Progress 🔄') {
+        uatSection = `3. UAT: ${d.uat_tc_total} TC 🔄\n> Happy: ${d.uat_tc_happy} 🔄\n> Unhappy: ${d.uat_tc_unhappy} 🔄\n> Defect: ${d.uat_tc_defect}`;
+      } else {
+        uatSection = `3. UAT: ${d.uat_tc_total} TC ✅\n> Happy: ${d.uat_tc_happy} ✅\n> Unhappy: ${d.uat_tc_unhappy} ✅\n> Defect: ${d.uat_tc_defect}`;
+      }
+
+      // ── REPORT 0: UPDATE AKTIVITAS TESTING ──
+      generatedReports[0] =
+        `*Update Report Aktivitas Testing*
 Nama Aplikasi: ${d.app_name || '-'}
 Nama Project : ${d.project_name || '-'}
 Link Jira project : ${d.jira_link || '-'}
@@ -681,7 +1136,7 @@ ${d.outcome || '-'}
 5.Mulai aktivitas pengujian: ${fmtDate(d.sit_date)}
 	
 *Progres Testing:*
-*Ready to Deploy*
+*${d.progress_testing || 'Ready to Deploy ✅'}*
 1. Data Preparation:
 ${prepBlock}
 
@@ -696,12 +1151,12 @@ PIC PO / User : ${d.pic_po || '-'}
 Test Lead : ${d.pic_tl || '-'}
 Tester : ${d.pic_tester || '-'}`;
 
-  // ── REPORT 1: READINESS REPORT ──
-  const deployTimeStrH = d.start_time ? d.start_time.split(':')[0] + ':' + d.start_time.split(':')[1] : '-';
-  const deployTimeEndH = d.end_time ? d.end_time.split(':')[0] + ':' + d.end_time.split(':')[1] : '-';
-  
-  generatedReports[1] =
-`Deployment Readiness Report
+      // ── REPORT 1: READINESS REPORT ──
+      const deployTimeStrH = d.start_time ? d.start_time.split(':')[0] + ':' + d.start_time.split(':')[1] : '-';
+      const deployTimeEndH = d.end_time ? d.end_time.split(':')[0] + ':' + d.end_time.split(':')[1] : '-';
+
+      generatedReports[1] =
+        `Deployment Readiness Report
 Nama Aplikasi: ${d.app_name || '-'}
 Nama Project : ${d.project_name || '-'}
 Link Jira project : ${d.jira_link || '-'}
@@ -754,9 +1209,9 @@ PIC PO / User : ${d.pic_po || '-'}
 Test Lead : ${d.pic_tl || '-'}
 Tester : ${d.pic_tester || '-'}`;
 
-  // ── REPORT 2: DEPLOY TEST REPORT ──
-  generatedReports[2] = 
-`*DEPLOYMENT TEST REPORT*
+      // ── REPORT 2: DEPLOY TEST REPORT ──
+      generatedReports[2] =
+        `*DEPLOYMENT TEST REPORT*
 *IT Application Support Group*
 
 *Deployment Test ${d.app_name || '-'}*
@@ -835,30 +1290,30 @@ Deploy Status: ${d.deploy_status}
 
 Terima kasih 🙏🏼`;
 
-  document.getElementById('result-box').style.display = 'block';
-  showTab(0);
-  document.getElementById('result-box').scrollIntoView({ behavior:'smooth', block:'start' });
-  showToast('Laporan berhasil di-generate! ✨');
-}
+      document.getElementById('result-box').style.display = 'block';
+      showTab(0);
+      document.getElementById('result-box').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Laporan berhasil di-generate! ✨');
+    }
 
-// --- TAB NAVIGATION ---
-function showTab(i) {
-  currentTab = i;
-  document.querySelectorAll('.t-btn').forEach((b,idx) => b.className = 't-btn'+(idx===i?' active':''));
-  document.getElementById('report-content').textContent = generatedReports[i];
-  const cb = document.getElementById('copy-btn');
-  cb.textContent = 'Salin Text'; cb.style.background = 'var(--purple-b)'; cb.style.color = 'var(--accent)';
-}
+    function showTab(i) {
+      currentTab = i;
+      document.querySelectorAll('.t-btn').forEach((b, idx) => b.className = 't-btn' + (idx === i ? ' active' : ''));
+      document.getElementById('report-content').textContent = generatedReports[i];
+      const cb = document.getElementById('copy-btn');
+      cb.textContent = 'Salin Text'; cb.style.background = 'var(--purple-b)'; cb.style.color = 'var(--accent)';
+    }
 
-function copyReport() {
-  navigator.clipboard.writeText(generatedReports[currentTab]).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = '✓ Tersalin!'; btn.style.background = 'var(--success-b)'; btn.style.color = 'var(--success)';
-    setTimeout(() => { btn.textContent = 'Salin Text'; btn.style.background = 'var(--purple-b)'; btn.style.color = 'var(--accent)'; }, 2000);
-  });
-}
+    function copyReport() {
+      navigator.clipboard.writeText(generatedReports[currentTab]).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = '✓ Tersalin!'; btn.style.background = 'var(--success-b)'; btn.style.color = 'var(--success)';
+        setTimeout(() => { btn.textContent = 'Salin Text'; btn.style.background = 'var(--purple-b)'; btn.style.color = 'var(--accent)'; }, 2000);
+      });
+    }
 
-init();
-</script>
+    init();
+  </script>
 </body>
+
 </html>
